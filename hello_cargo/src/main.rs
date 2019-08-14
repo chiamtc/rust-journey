@@ -5,21 +5,37 @@ use std::cmp::Ordering;
 fn main() {
     println!("Guess the number!");
     let secret_number = rand::thread_rng().gen_range(1, 100);
-    println!("The secret number is :{}", secret_number);
-    println!("Please input your guess.");
+    //println!("The secret number is :{}", secret_number);
+    loop {
+        println!("Please input your guess.");
 
-    let mut guess = String::new();
+        let mut guess = String::new();
 
-    io::stdin().read_line(&mut guess)
-        .expect("Failed to read line");
+        io::stdin().read_line(&mut guess)
+            .expect("Failed to read line");
 
-    println!("You guessed: {}", guess);
-    let guess:u32 = guess.trim().parse()
-        .expect("Please type a number");
+        println!("You guessed: {}", guess);
+        /*
+        Version 1
+        let guess: u32 = guess.trim().parse()
+              .expect("Please type a number"); //.expect() to use io::Result type - which returns Ok or Err to catch
+  */
+        //Version 2
+        let guess: u32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue
+            /*
+             The underscore, _, is a catchall value; in this example, we’re saying we want to match all Err values, no matter what information they have inside them.
+             */
+        };
 
-    match guess.cmp(&secret_number) {
-        Ordering::Less => println!("Too small!"),
-        Ordering::Greater => println!("Too big!"),
-        Ordering::Equal => println!("You win!"),
+        match guess.cmp(&secret_number) { //match expression using arm's pattern
+            Ordering::Less => println!("Too small!"),
+            Ordering::Greater => println!("Too big!"),
+            Ordering::Equal => {
+                println!("You win!");
+                break;
+            }
+        }
     }
 }
