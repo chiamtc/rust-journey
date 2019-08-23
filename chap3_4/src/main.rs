@@ -58,9 +58,9 @@ fn main() {
 
         index += 1;
     }
-
-    for element in a.iter() { //iterating each element in array
-        println!("the value in for loop is {}", element);
+    //index - value
+    for (index, value) in a.iter().enumerate() { //iterating each element in array
+        println!("the value in for loop is {} - {}", index, value);
     }
 
     for (number, index) in (1..4).rev().enumerate() { //reverse() enumerate() = get position
