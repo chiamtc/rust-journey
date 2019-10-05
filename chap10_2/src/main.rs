@@ -1,3 +1,5 @@
+
+
 pub trait Summary{
     fn summarize_author(&self) -> String;
 
@@ -107,3 +109,5 @@ fn returns_summarizable() -> impl Summary {
         retweet: false,
     }
 }
+
+
