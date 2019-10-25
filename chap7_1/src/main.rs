@@ -22,7 +22,8 @@ use std::io::Result as IoResult;
 fn main() {
     println!("Hello, world!");
     println!("{:?}",lib::eat_at_restaurant());
-    lib::front_of_house::hosting::add_to_waitlist()
+    lib::front_of_house::hosting::add_to_waitlist();
+    println!(restaurant::eat_at_restaurant())
 }
 
 //for library import from different file and packages https://stackoverflow.com/questions/45519176/how-do-i-use-or-import-a-local-rust-file
