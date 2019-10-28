@@ -1,4 +1,5 @@
 use std::mem;
+
 fn main() {
     //i8, u8, i16, u16, i32, u32, i64, u64;
     let a = 1 + 20;
@@ -44,7 +45,59 @@ fn main() {
     let h = String::from("Hello, ");
     let w = String::from("World!");
     let ss = h + &w; // -> (self, &reference)
-    println!("{}",ss)
+    println!("{}", ss);
+
+    let mut v = Vec::new();
+    for i in 1..1000 {
+        v.push(i);
+    }
+
+    /* moving becuase of mut
+    take(v);
+     println!("Finsihed");
+
+ //copying because of immutable ref
+     let a = 32;
+     let b = 45;
+     cop(a, b);
+     println!("{} {}", a, b);*/
 
 
+    v = re(v);
+
+    println!("Still own v: {} {} ", v[0], v[1]);
+
+    borrow1(&v);
+
+    println!("Still own v: {} {} ", v[0], v[1]);
+
+    borrow2(&v);
+    println!("Still own v: {} {} ", v[0], v[1]);
 }
+
+fn take(v: Vec<u32>) {
+    println!("we took v: {}", v[10] + v[100])
+}
+
+fn cop(a: u32, b: u32) {
+    println!("{}", a + b)
+}
+//mut ref = move
+//immuatable ref = copy
+//when reference drops, the ref ends
+
+
+fn re(v: Vec<i32>) -> Vec<i32> {
+    println!("{}", v[120] + v[111]);
+
+    v
+}
+
+fn borrow1(v: &Vec<i32>) {
+    println!("{}", (*v)[10] + (*v)[12])
+}
+
+fn borrow2(v: &Vec<i32>) {
+    println!("{}", v[10] + v[11])
+}
+
