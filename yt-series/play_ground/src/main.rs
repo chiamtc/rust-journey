@@ -75,7 +75,7 @@ fn main() {
     println!("Still own v: {} {} ", v[0], v[1]);
 }
 
-fn take(v: Vec<u32>) {
+fn take(v: Vec<u32>)    {
     println!("we took v: {}", v[10] + v[100])
 }
 
