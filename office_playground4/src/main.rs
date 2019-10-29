@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fs::File;
 
 #[derive(Debug)]
 enum Example {
@@ -29,25 +30,25 @@ fn main() {
         Example::Text(String::from("abc"))
     ];
 
-  /*  let mut res = Example::Int(0);
-    for i in &r {
-        res = match i {
-            Example::Int(a) => {
-                println!("{} an integer", a);
-                Example::Int(*a)
-            }
-            Example::Float(a) => {
-                println!("{} a float number", a);
-                continue;
-            }
-            Example::Text(a) => {
-                println!("{} an actual String", a);
-                continue;
-            }
-        };
-    }
-    println!("{:?}", res);
-*/
+    /*  let mut res = Example::Int(0);
+      for i in &r {
+          res = match i {
+              Example::Int(a) => {
+                  println!("{} an integer", a);
+                  Example::Int(*a)
+              }
+              Example::Float(a) => {
+                  println!("{} a float number", a);
+                  continue;
+              }
+              Example::Text(a) => {
+                  println!("{} an actual String", a);
+                  continue;
+              }
+          };
+      }
+      println!("{:?}", res);
+  */
 
     let mut hm = HashMap::new();
     hm.insert(String::from("random"), 12);
@@ -72,17 +73,56 @@ fn main() {
 
     let s = Some("c");
     //this
-    match s{
+    match s {
         Some(i) => println!("{}", i),
         _ => {}
     }
 
     //equals to this but without the exhaustive matching like match s{}
-    if let Some(i) = s{ //Some(i) is the pattern
-        println!("{}",i);
-    }else{
+    if let Some(i) = s { //Some(i) is the pattern
+        println!("{}", i);
+    } else {
         {}
     }
+
+    let mut z = Some(0);
+    while let Some(i) = z {
+        if i > 10 {
+            println!("quit");
+            z = None;
+        } else {
+            println!("{}", i);
+            z = Some(i + 2)
+        }
+    }
+
+    let f1 = 24.12312_f32;
+    let i_1 = f1 as u8;
+    let c_1 = i_1 as char;
+    println!("{} {} {}", f1, i_1, c_1);
+
+
+    let f = File::open("sample.txt");
+
+    let f = match f {
+        Ok(file) => file,
+        Err(error) => {
+            panic!("paniking and error {:?}", error)
+        }
+    };
 }
 
+/*
+enum of Option
+enum Option<T>{
+    Some<T>,
+    None
+}
+
+enum of Result
+enum Result <T,E>{
+    Ok(T),
+    Err(E)
+}
+*/
 
