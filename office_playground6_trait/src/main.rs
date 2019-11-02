@@ -1,41 +1,30 @@
-use std::fmt;
-struct Square<T>{
-    x:T
+use std::ops::Mul;
+
+trait Shape<T> {
+    fn area(&self) -> T;
 }
 
-fn  p<T:fmt::Debug> (x:T){
-    println!("{:?}",x)
+//T = generic of Multiplication
+struct Rectangle<T: Mul> {
+    x: T,
+    y: T,
 }
 
-struct A<T>{
-    x:T
-}
-
-//T here is to give implementation A a scope
-//we can change T to any name we want as long as the entire impl block has the same name
-//E.g.
-/*
-impl <C> A<C>{
-    fn item(&self) -> &C{
-        &self.x
-    }
-}
-*/
-impl <T> A<T>{
-    fn item(&self) -> &T{
-        &self.x
+//Copy trait for Shape T aand implementing for Rectangle T.
+// where of our output has to be a type T
+//Reason of Copy here is because we're using reference self.x and self.y , otherwise it will not compile
+//impl<T: Mul<Output=T> + Copy> Shape<T> for Rectangle<T> { or
+//impl<T: Copy> Shape<T> for Rectangle<T> where T: Mul<Output=T> {
+impl <T:Copy> Shape<T> for Rectangle<T> where T:Mul<Output = T>{
+    // anything after "where" means that 'the generic is a type of XX'
+    fn area(&self) -> T {
+        self.x * self.y
     }
 }
 
 fn main() {
-    let s = Square{x:10};
-    let s = Square{x:1.0};
-    let s = Square{x:"Hello"};
-    let s = Square{x:'c'};
+    let r = Rectangle { x: 10, y: 20 };
+    let r2 = Rectangle { x: 10.10, y: 20.31 };
 
-    p(10);
-
-    let a = A{x:"Hello"};
-    a.item();
-
+    println!("{} {} ", r.area(), r2.area());
 }

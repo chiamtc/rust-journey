@@ -1,5 +1,5 @@
 [package]
-name = "office_playground6_trait"
+name = "office_playground6"
 version = "0.1.0"
 authors = ["Chiam Tat Cheng <chiamcheng@gmail.com>"]
 edition = "2018"
