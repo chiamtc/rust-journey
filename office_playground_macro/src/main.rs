@@ -60,7 +60,7 @@ fn odd(x: i32) -> bool {
     x % 2 != 0
 }
 
-macro_rules! calc{
+macro_rules! calc {
 (eval $e:expr) => {{
     {
     let val:usize = $e;
@@ -69,15 +69,15 @@ macro_rules! calc{
 }};
 
 (eval $e:expr, $(eval $es:expr),*) =>{
-{
-calc!{eval $e}
-calc!{ $(eval $es), +}
-}
-}
+    {
+        calc!{eval $e}
+        calc!{ $(eval $es), +}
+        }
+    }
 }
 
 macro_rules! new_map {
-//($ (....)* ) = this expression can be repeated to infinite
+//($ (....)* ) = this expression can be repeated from 0 to infinite
 //you can remove the comma "," , it's just for syntax purpose,to look good
 //replacing * with + means that this macro requires minimum one value to be consumed
 //* = can writes without any expression
@@ -93,10 +93,38 @@ macro_rules! new_map {
 }
 }
 
+#[derive(Debug, PartialEq)]
+enum BookFormat{
+    PaperFormat,
+    DigitalFormat,
+    HardCopyFormat
+}
+
+struct Book{
+    isbn:String,
+    format: BookFormat
+}
+
+
+impl PartialEq<BookFormat> for Book{
+    fn eq (&self, other:&BookFormat) -> bool{
+        self.format == *other
+    }
+}
+
+impl PartialEq for Book{
+    fn eq(&self, other_book:&Book) -> bool{
+        self.isbn == other_book.isbn
+    }
+}
 
 fn main() {
-    println!("Hello, world!");
-    a_macro!();
+    let book1 = Book { isbn:String::from("123"), format: BookFormat::PaperFormat};
+    let book2 = Book { isbn:String::from("13333"), format: BookFormat::DigitalFormat};
+
+    println!("{}", book1 == BookFormat::PaperFormat);
+    println!("{}", book1 == book2);
+  /*  a_macro!();
 
     x_and_y!(x=>10);
 
@@ -120,9 +148,9 @@ fn main() {
     "three"=> 3
     );
 
-    calc!{
+    calc! {
     eval 4*5,
     eval 4+10
-    }
+    }*/
 }
 
