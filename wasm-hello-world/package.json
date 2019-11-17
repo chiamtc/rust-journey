@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "serve": "webpack-dev-server"
+    "serve": "webpack-dev-server --port 9000"
   },
   "devDependencies": {
     "webpack": "^4.41.2",
