@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::{future_to_promise, spawn_local, JsFuture};
-use web_sys::{AudioContext,OscillatorType, Request, RequestInit, RequestMode, Response, console};
+use web_sys::{AudioContext, OscillatorType, Request, RequestInit, RequestMode, Response, console};
 
 /// A struct to hold some data from the github Branch API.
 ///
@@ -15,8 +15,8 @@ use web_sys::{AudioContext,OscillatorType, Request, RequestInit, RequestMode, Re
 pub struct M3dAudio {
     ctx: AudioContext,
     //TODO add filter
-
 }
+
 
 #[wasm_bindgen]
 impl M3dAudio {
@@ -29,17 +29,25 @@ impl M3dAudio {
         })
     }
 
-   /*
-    OG working code to return a promise
-    #[wasm_bindgen]
-    pub fn decode(&self, buffer: js_sys::ArrayBuffer) -> Result<js_sys::Promise, JsValue>{
-        self.ctx.decode_audio_data(&buffer)
-    }*/
+    /*
+     OG working code to return a promise
+     #[wasm_bindgen]
+     pub fn decode(&self, buffer: js_sys::ArrayBuffer) -> Result<js_sys::Promise, JsValue>{
+         self.ctx.decode_audio_data(&buffer)
+     }*/
 
 
     #[wasm_bindgen]
-    pub fn decode(&self, buffer: js_sys::ArrayBuffer) -> Result<JsValue, JsValue>{
-        self.ctx.decode_audio_data(&buffer)
+    pub fn decode(&self, buffer: js_sys::ArrayBuffer) -> JsValue {
+        let res = self.ctx.decode_audio_data(&buffer)
+            .and_then(|_| {
+                Ok(42)
+            })
+            // And then convert the `Item` and `Error` into `JsValue`.
+            .map(|result| {
+                JsValue::from(result)
+            });
+        JsValue::from("asdadas")
     }
 }
 

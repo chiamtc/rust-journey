@@ -16,8 +16,6 @@ rust.then(m => {
     m.runner().then((data) => {
         const buffer = data;
         const ctx = new m.M3dAudio();
-        ctx.decode(buffer).then((res)=>{
-            console.log('res',res)
-        })
+        console.log(ctx.decode(buffer))
     })
 }).catch(console.error);
