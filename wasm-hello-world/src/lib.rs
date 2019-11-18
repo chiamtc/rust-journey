@@ -2,7 +2,7 @@ extern crate wasm_bindgen;
 
 use wasm_bindgen::prelude::*;
 
-use web_sys::{AudioContext, XmlHttpRequest, console, EventListener};
+use web_sys::{AudioContext, XmlHttpRequest, console, EventListener, XmlHttpRequestEventTarget};
 
 #[wasm_bindgen]
 //abiltiy to import JS native API ** has to match with actual JS WEB MDN API
@@ -55,22 +55,27 @@ pub fn instantiate_context() -> Result<web_sys::AudioContext, wasm_bindgen::JsVa
     request.open("GET", "https://firebasestorage.googleapis.com/v0/b/podstetheedata.appspot.com/o/human_samples%2F-Lsxlh74yy4ASUohCFEA.wav?alt=media&token=6088e994-73b6-47a4-bc0d-a1090cb3b288");
 //    let response_type = from_js_value(ArrayBuffer);
     request.set_response_type(web_sys::XmlHttpRequestResponseType::Arraybuffer);
-    let results = request.send();
-     match results{
-             Err(e) => println!("nothing {:?}", e),
-             Ok(res) => {
-                 println!("{:?}", res);
-                 console::log_1(&"Hello using web-sys".into());
-             }
-     }
-  /*  match request.onload() {
-        None => println!("nothing..."),
-        Some(f) => {
-            println!("?? {:?}", f);
 
+    /*let closure = Closure::wrap(Box::new(move |x|{
+        console::log_1(&x.into())
+    }) as Box<dyn FnMut(_)>);*/
+
+    XmlHttpRequestEventTarget.onload(request.onload());
+
+    console::log_1(&a.into());
+    let results = request.send();
+    match results {
+        Err(e) => println!("nothing {:?}", e),
+        Ok(res) => {
+            console::log_1(&"Request sent".into());
         }
-    }*/
-//    request.send();
-//    request::onload()
+    }
+    /*  match request.onload() {
+          None => println!("nothing..."),
+          Some(f) => {
+              println!("?? {:?}", f);
+
+          }
+      }*/
     ctx
 }
