@@ -1,3 +1,6 @@
+extern crate wasm_bindgen;
+extern crate web_sys;
+extern crate js_sys;
 use futures::{future, Future};
 use js_sys::{ArrayBuffer, Promise};
 use serde::{Deserialize, Serialize};
@@ -32,10 +35,9 @@ pub struct M3dAudio {
 
 #[wasm_bindgen]
 impl M3dAudio {
-    #[wasm_bindgen(constructor, vendor_prefix=webkit)]
+    #[wasm_bindgen(constructor)]
     pub fn new() -> Result<M3dAudio, JsValue> {
-        let ctx = AudioContext::new()?;
-
+        let ctx = web_sys::AudioContext::new().unwrap();
         Ok(M3dAudio {
             ctx,
         })
@@ -43,8 +45,9 @@ impl M3dAudio {
 
      //OG working code to return a promise
      #[wasm_bindgen]
-     pub fn decode(&self, buffer: js_sys::ArrayBuffer) -> Result<js_sys::Promise, JsValue>{
-         self.ctx.decode_audio_data(&buffer)
+     pub fn decode(&self, buffer: js_sys::ArrayBuffer, cb:&js_sys::Function) -> Result<js_sys::Promise, JsValue>{
+         console::log_1(&"here?".into());
+         self.ctx.decode_audio_data_with_success_callback(&buffer, cb.apply(&JsValue::null(), &js_sys::Array:new()))
      }
 
 
