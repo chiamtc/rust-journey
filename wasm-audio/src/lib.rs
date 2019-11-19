@@ -40,14 +40,31 @@ impl M3dAudio {
     #[wasm_bindgen]
     pub fn decode(&self, buffer: js_sys::ArrayBuffer) -> JsValue {
         let res = self.ctx.decode_audio_data(&buffer)
-            .and_then(|_| {
+            .and_then(|val| {
+                 //compiles and &x.into() is the audiocontext and definitely needs cb.forget()
+                /* let cb = Closure::wrap(Box::new(move |x: JsValue|  {
+                        console::log_1(&x.into());
+                  }) as Box<FnMut(JsValue)>);
+                  val.then(&cb);
+                  cb.forget();*/
+                let cb = Closure::wrap(Box::new(move |x: JsValue|{
+                    console::log_1(&x.into());
+//                    let decoded = x.into();
+//                    decoded
+                }) as Box<FnMut(JsValue)>);
+
+
+                val.then(&cb);
+                cb.forget();
+
                 Ok(42)
-            })
-            // And then convert the `Item` and `Error` into `JsValue`.
-            .map(|result| {
-                JsValue::from(result)
             });
-        JsValue::from("asdadas")
+            // And then convert the `Item` and `Error` into `JsValue`.
+
+        match res {
+            Ok(T) => T.into(),
+            Err(e) => JsValue::from("asdadas")
+        }
     }
 }
 
