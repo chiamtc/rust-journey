@@ -1,0 +1,12 @@
+{
+  "name": "wasm-audio",
+  "version": "1.0.0",
+  "scripts": {
+    "serve": "webpack-dev-server --port 9000"
+  },
+  "dependencies": {
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.9.0"
+  }
+}

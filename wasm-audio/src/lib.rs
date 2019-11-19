@@ -11,8 +11,20 @@ use web_sys::{AudioContext, OscillatorType, Request, RequestInit, RequestMode, R
 /// Note how we don't have to define every member -- serde will ignore extra
 /// data when deserializing
 ///
+
+
+/*
+#[wasm_bindgen]
+extern "C"{
+    #[wasm_bindgen(vendor_prefix = webkit)]
+    type AudioContext;
+}
+*/
+
 #[wasm_bindgen]
 pub struct M3dAudio {
+
+//    #[wasm_bindgen(vendor_prefix = webkit)]
     ctx: AudioContext,
     //TODO add filter
 }
@@ -20,7 +32,7 @@ pub struct M3dAudio {
 
 #[wasm_bindgen]
 impl M3dAudio {
-    #[wasm_bindgen(constructor)]
+    #[wasm_bindgen(constructor, vendor_prefix=webkit)]
     pub fn new() -> Result<M3dAudio, JsValue> {
         let ctx = AudioContext::new()?;
 
@@ -29,16 +41,15 @@ impl M3dAudio {
         })
     }
 
-    /*
-     OG working code to return a promise
+     //OG working code to return a promise
      #[wasm_bindgen]
      pub fn decode(&self, buffer: js_sys::ArrayBuffer) -> Result<js_sys::Promise, JsValue>{
          self.ctx.decode_audio_data(&buffer)
-     }*/
+     }
 
 
     #[wasm_bindgen]
-    pub fn decode(&self, buffer: js_sys::ArrayBuffer) -> JsValue {
+    pub fn decode2(&self, buffer: js_sys::ArrayBuffer) -> JsValue {
         let res = self.ctx.decode_audio_data(&buffer)
             .and_then(|val| {
                  //compiles and &x.into() is the audiocontext and definitely needs cb.forget()
@@ -47,6 +58,7 @@ impl M3dAudio {
                   }) as Box<FnMut(JsValue)>);
                   val.then(&cb);
                   cb.forget();*/
+
                 let cb = Closure::wrap(Box::new(move |x: JsValue|{
                     console::log_1(&x.into());
 //                    let decoded = x.into();
