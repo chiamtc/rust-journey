@@ -47,7 +47,7 @@ impl M3dAudio {
      #[wasm_bindgen]
      pub fn decode(&self, buffer: js_sys::ArrayBuffer, cb:&js_sys::Function) -> Result<js_sys::Promise, JsValue>{
          console::log_1(&"here?".into());
-         self.ctx.decode_audio_data_with_success_callback(&buffer, cb.apply(&JsValue::null(), &js_sys::Array:new()))
+         self.ctx.decode_audio_data_with_success_callback(&buffer, cb)
      }
 
 

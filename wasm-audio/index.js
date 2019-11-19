@@ -5,14 +5,17 @@ import ('./pkg/wasm_audio').then(m => {
         if (fm === null) {
             fm = new m.M3dAudio();
             console.log(fm);
-            fm.decode(buffer).then((ac) => {
-               /* const numberOfChannels = ac.numberOfChannels;
-                const length = ac.length;
-                const sampleRate = ac.sampleRate;
-                const oac = new OfflineAudioContext(numberOfChannels, length, sampleRate);
-                console.log('1', oac);*/
+            /*  fm.decode(buffer).then((ac) => {
+                const numberOfChannels = ac.numberOfChannels;
+                 const length = ac.length;
+                 const sampleRate = ac.sampleRate;
+                 const oac = new OfflineAudioContext(numberOfChannels, length, sampleRate);
+                 console.log('1', oac);
                 console.log('2', ac);
-            });
+            });*/
+            fm.decode(buffer,(res)=>{
+                console.log('res',res)
+            })
         } else {
             fm.free();
             fm = null;
