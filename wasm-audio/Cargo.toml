@@ -28,6 +28,8 @@ features = [
   'Window',
   "console",
   'AudioContext',
+  "OfflineAudioContext",
+  "OfflineAudioContextOptions",
     'AudioDestinationNode',
     'AudioNode',
     'AudioParam',

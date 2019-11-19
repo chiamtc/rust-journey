@@ -1,13 +1,14 @@
 extern crate wasm_bindgen;
 extern crate web_sys;
 extern crate js_sys;
+
 use futures::{future, Future};
 use js_sys::{ArrayBuffer, Promise};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::{future_to_promise, spawn_local, JsFuture};
-use web_sys::{AudioContext, OscillatorType, Request, RequestInit, RequestMode, Response, console};
+use web_sys::{OfflineAudioContext,OfflineAudioContextOptions, AudioContext, OscillatorType, Request, RequestInit, RequestMode, Response, console};
 
 /// A struct to hold some data from the github Branch API.
 ///
@@ -23,12 +24,11 @@ extern "C"{
     type AudioContext;
 }
 */
-
 #[wasm_bindgen]
 pub struct M3dAudio {
-
-//    #[wasm_bindgen(vendor_prefix = webkit)]
+    //    #[wasm_bindgen(vendor_prefix = webkit)]
     ctx: AudioContext,
+//    offlineCtx:OfflineAudioContext
     //TODO add filter
 }
 
@@ -37,30 +37,35 @@ pub struct M3dAudio {
 impl M3dAudio {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Result<M3dAudio, JsValue> {
-        let ctx = web_sys::AudioContext::new().unwrap();
+        let ctx = web_sys::AudioContext::new()?;
         Ok(M3dAudio {
-            ctx,
+            ctx
         })
     }
 
-     //OG working code to return a promise
-     #[wasm_bindgen]
-     pub fn decode(&self, buffer: js_sys::ArrayBuffer, cb:&js_sys::Function) -> Result<js_sys::Promise, JsValue>{
-         console::log_1(&"here?".into());
-         self.ctx.decode_audio_data_with_success_callback(&buffer, cb)
-     }
+    //OG working code to return a promise
+    #[wasm_bindgen]
+    pub fn decode(&self, buffer: js_sys::ArrayBuffer, decodeCallback: &js_sys::Function) -> Result<js_sys::Promise, JsValue> {
+        self.ctx.decode_audio_data_with_success_callback(&buffer, decodeCallback)
+    }
+
+    #[wasm_bindgen]
+    pub fn new_offline_ctx(number_of_channels: u32, length: u32, sample_rate: f32) -> Result<web_sys::OfflineAudioContext, JsValue> {
+        web_sys::OfflineAudioContext::new_with_context_options(&web_sys::OfflineAudioContextOptions::new(length, sample_rate))
+    }
 
 
+    /* useless
     #[wasm_bindgen]
     pub fn decode2(&self, buffer: js_sys::ArrayBuffer) -> JsValue {
         let res = self.ctx.decode_audio_data(&buffer)
             .and_then(|val| {
                  //compiles and &x.into() is the audiocontext and definitely needs cb.forget()
-                /* let cb = Closure::wrap(Box::new(move |x: JsValue|  {
+                *//* let cb = Closure::wrap(Box::new(move |x: JsValue|  {
                         console::log_1(&x.into());
                   }) as Box<FnMut(JsValue)>);
                   val.then(&cb);
-                  cb.forget();*/
+                  cb.forget();*//*
 
                 let cb = Closure::wrap(Box::new(move |x: JsValue|{
                     console::log_1(&x.into());
@@ -80,7 +85,7 @@ impl M3dAudio {
             Ok(T) => T.into(),
             Err(e) => JsValue::from("asdadas")
         }
-    }
+    }*/
 }
 
 #[wasm_bindgen(js_name = "runner")]

@@ -1,10 +1,9 @@
 import ('./pkg/wasm_audio').then(m => {
-    m.runner().then((data) => {
+    m.runner().then(async (data) => {
         const buffer = data;
         let fm = null;
         if (fm === null) {
             fm = new m.M3dAudio();
-            console.log(fm);
             /*  fm.decode(buffer).then((ac) => {
                 const numberOfChannels = ac.numberOfChannels;
                  const length = ac.length;
@@ -12,10 +11,17 @@ import ('./pkg/wasm_audio').then(m => {
                  const oac = new OfflineAudioContext(numberOfChannels, length, sampleRate);
                  console.log('1', oac);
                 console.log('2', ac);
-            });*/
-            fm.decode(buffer,(res)=>{
-                console.log('res',res)
+            });*/;
+
+            const a = new Promise((resolve, reject) => {
+                fm.decode(buffer, (res) => res !== null ? resolve(res) : reject("Failed to decode the audio, check WASM code"));
             })
+
+            const ctx = await a;
+            const oad = m.M3dAudio.new_offline_ctx(ctx.numberOfChannels, ctx.length, ctx.sampleRate);
+            console.log(oad)
+
+
         } else {
             fm.free();
             fm = null;
