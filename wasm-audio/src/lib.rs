@@ -30,7 +30,7 @@ extern "C" {
 
 
     #[wasm_bindgen(method, js_name=createBufferSource)]
-    fn create_buffer_source(this:&OfflineAudioContext) -> AudioBufferSourceNode;
+    fn create_buffer_source(oac:&OfflineAudioContext) -> AudioBufferSourceNode;
 
     #[wasm_bindgen(constructor)]
     fn new(number_of_channels: u32, length: u32, sample_rate: f32) -> OfflineAudioContext;
@@ -49,6 +49,11 @@ pub struct M3dAudio {
 #[wasm_bindgen]
 pub fn new_offline_ctx(number_of_channels: u32, length: u32, sample_rate: f32) -> OfflineAudioContext {
     OfflineAudioContext::new(number_of_channels, length, sample_rate)
+}
+
+#[wasm_bindgen]
+pub fn create_buffer_source(oac:OfflineAudioContext) -> AudioBufferSourceNode{
+    oac.create_buffer_source()
 }
 
 

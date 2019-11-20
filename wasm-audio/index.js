@@ -20,6 +20,8 @@ import ('./pkg/wasm_audio').then(m => {
             const ctx = await a;
             // const oad = m.M3dAudio.new_offline_ctx(ctx.numberOfChannels, ctx.length, ctx.sampleRate);
             const oad = m.new_offline_ctx(ctx.numberOfChannels, ctx.length, ctx.sampleRate);
+            const bSource = m.create_buffer_source(oad);
+            console.log(bSource);
             console.log(oad)
 
         } else {
