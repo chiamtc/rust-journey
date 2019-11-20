@@ -18,9 +18,9 @@ import ('./pkg/wasm_audio').then(m => {
             })
 
             const ctx = await a;
-            const oad = m.M3dAudio.new_offline_ctx(ctx.numberOfChannels, ctx.length, ctx.sampleRate);
+            // const oad = m.M3dAudio.new_offline_ctx(ctx.numberOfChannels, ctx.length, ctx.sampleRate);
+            const oad = m.new_offline_ctx(ctx.numberOfChannels, ctx.length, ctx.sampleRate);
             console.log(oad)
-
 
         } else {
             fm.free();
