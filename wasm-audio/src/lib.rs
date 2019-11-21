@@ -72,10 +72,7 @@ pub fn new_offline_ctx(number_of_channels: u32, length: u32, sample_rate: f32, b
     let b_source = off_ctx.create_buffer_source()?;
     let destination = off_ctx.destination();
     b_source.connect_with_audio_node(&destination);
-    console::log_1(&b_source.playback_rate().into());
-//    b_source.start();
-//    b_source.set_buffer(buffer);
-    console::log_1(&off_ctx.destination().into());
+    b_source.set_buffer(buffer);
     Ok(M3dOfflineAudio { ctx: off_ctx, b_source})
 }
 
