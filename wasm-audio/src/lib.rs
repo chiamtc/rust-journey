@@ -8,7 +8,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::{future_to_promise, spawn_local, JsFuture};
-use web_sys::{OfflineAudioContextOptions, AudioContext, OscillatorType, Request, RequestInit, RequestMode, Response, console};
+use web_sys::{AudioBufferSourceNode, OfflineAudioContext, OfflineAudioContextOptions, AudioContext, OscillatorType, Request, RequestInit, RequestMode, Response, console};
 //use web_sys::OfflineAudioContext;
 
 /// A struct to hold some data from the github Branch API.
@@ -18,7 +18,7 @@ use web_sys::{OfflineAudioContextOptions, AudioContext, OscillatorType, Request,
 ///
 
 
-
+/*
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(vendor_prefix = webkit)]
@@ -35,8 +35,7 @@ extern "C" {
     #[wasm_bindgen(constructor)]
     fn new(number_of_channels: u32, length: u32, sample_rate: f32) -> OfflineAudioContext;
 
-}
-
+}*/
 #[wasm_bindgen]
 pub struct M3dAudio {
     //    #[wasm_bindgen(vendor_prefix = webkit)]
@@ -45,7 +44,17 @@ pub struct M3dAudio {
     //TODO add filter
 }
 
+#[wasm_bindgen]
+pub struct M3dOfflineAudio {
+    //    #[wasm_bindgen(vendor_prefix = webkit)]
+    ctx: OfflineAudioContext,
+    b_source:AudioBufferSourceNode
+//    offlineCtx:OfflineAudioContext
+    //TODO add filter
+}
 
+
+/*
 #[wasm_bindgen]
 pub fn new_offline_ctx(number_of_channels: u32, length: u32, sample_rate: f32) -> OfflineAudioContext {
     OfflineAudioContext::new(number_of_channels, length, sample_rate)
@@ -54,8 +63,21 @@ pub fn new_offline_ctx(number_of_channels: u32, length: u32, sample_rate: f32) -
 #[wasm_bindgen]
 pub fn create_buffer_source(oac:OfflineAudioContext) -> AudioBufferSourceNode{
     oac.create_buffer_source()
-}
+}*/
 
+
+#[wasm_bindgen]
+pub fn new_offline_ctx(number_of_channels: u32, length: u32, sample_rate: f32, buffer:ArrayBuffer) -> Result<M3dOfflineAudio, JsValue> {
+    let off_ctx = web_sys::OfflineAudioContext::new_with_context_options(&web_sys::OfflineAudioContextOptions::new(length, sample_rate))?;
+    let b_source = off_ctx.create_buffer_source()?;
+    let destination = off_ctx.destination();
+    b_source.connect_with_audio_node(&destination);
+    console::log_1(&b_source.playback_rate().into());
+//    b_source.start();
+//    b_source.set_buffer(buffer);
+    console::log_1(&off_ctx.destination().into());
+    Ok(M3dOfflineAudio { ctx: off_ctx, b_source})
+}
 
 #[wasm_bindgen]
 impl M3dAudio {
