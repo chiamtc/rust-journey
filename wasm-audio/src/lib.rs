@@ -48,7 +48,8 @@ pub struct M3dAudio {
 pub struct M3dOfflineAudio {
     //    #[wasm_bindgen(vendor_prefix = webkit)]
     ctx: OfflineAudioContext,
-    b_source:AudioBufferSourceNode
+    b_source: AudioBufferSourceNode,
+
 //    offlineCtx:OfflineAudioContext
     //TODO add filter
 }
@@ -67,13 +68,34 @@ pub fn create_buffer_source(oac:OfflineAudioContext) -> AudioBufferSourceNode{
 
 
 #[wasm_bindgen]
-pub fn new_offline_ctx(number_of_channels: u32, length: u32, sample_rate: f32, buffer:ArrayBuffer) -> Result<M3dOfflineAudio, JsValue> {
+pub fn new_offline_ctx(number_of_channels: u32, length: u32, sample_rate: f32, buffer: ArrayBuffer) -> Result<M3dOfflineAudio, JsValue> {
     let off_ctx = web_sys::OfflineAudioContext::new_with_context_options(&web_sys::OfflineAudioContextOptions::new(length, sample_rate))?;
     let b_source = off_ctx.create_buffer_source()?;
     let destination = off_ctx.destination();
     b_source.connect_with_audio_node(&destination);
-    b_source.set_buffer(buffer);
-    Ok(M3dOfflineAudio { ctx: off_ctx, b_source})
+
+    let new_buffer_opts = web_sys::AudioBufferOptions::new(length, sample_rate);
+    let new_buffer = web_sys::AudioBuffer::new(&new_buffer_opts)?;
+    b_source.set_buffer(Some(&new_buffer));
+
+    let a = Closure::wrap(Box::new(move || {}) as Box<dyn Fn()>);
+
+    let b = |x: ArrayBuffer| {
+        console::log_1(&x.into());
+    };
+
+    let c = js_sys::Function::new_no_args("abc");
+
+    let complete_func = &b;
+//    off_ctx.set_oncomplete(Some(&c));
+    let ee = off_ctx.set_oncomplete(Some(&c));
+  /*  let e = match off_ctx.oncomplete() {
+        Some(T) => {
+            T.bind(off_ctx);
+        },
+        None => Ok(JsValue::from("asdas"))
+    };*/
+    Ok(M3dOfflineAudio { ctx: off_ctx, b_source })
 }
 
 #[wasm_bindgen]
@@ -88,8 +110,8 @@ impl M3dAudio {
 
     //OG working code to return a promise
     #[wasm_bindgen]
-    pub fn decode(&self, buffer: js_sys::ArrayBuffer, decodeCallback: &js_sys::Function) -> Result<js_sys::Promise, JsValue> {
-        self.ctx.decode_audio_data_with_success_callback(&buffer, decodeCallback)
+    pub fn decode(&self, buffer: js_sys::ArrayBuffer, decode_cb: &js_sys::Function) -> Result<js_sys::Promise, JsValue> {
+        self.ctx.decode_audio_data_with_success_callback(&buffer, decode_cb)
     }
 }
 

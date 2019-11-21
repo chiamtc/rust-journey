@@ -36,6 +36,7 @@ features = [
   'BaseAudioContext',
   'AudioParam',
   'AudioBuffer',
+  'AudioBufferOptions',
   'AudioNode',
   'AudioParam',
   'GainNode',
