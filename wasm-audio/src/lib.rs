@@ -6,7 +6,7 @@ use js_sys::{ArrayBuffer, Promise};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::{JsFuture, spawn_local, future_to_promise};
-use web_sys::{AudioBufferSourceNode, OfflineAudioContext, AudioContext, Request, RequestInit, RequestMode, Response, console};
+use web_sys::{AudioBufferSourceNode, AudioBuffer, OfflineAudioContext, AudioContext, Request, RequestInit, RequestMode, Response, console};
 //use web_sys::OfflineAudioContext;
 
 /// A struct to hold some data from the github Branch API.
@@ -60,27 +60,52 @@ impl M3dOfflineAudio {
     }
 
     #[wasm_bindgen]
-    pub fn apply_filter(&self) -> Result<String, JsValue> {
-        let b_source = self.ctx.create_buffer_source()?;
+    pub fn prep_buffer_and_rendering(&self) -> Result<OfflineAudioContext,JsValue>{
+        let b_source = self.ctx.create_buffer_source().unwrap();
         let destination = self.ctx.destination();
-        b_source.connect_with_audio_node(&destination)?;
+        b_source.connect_with_audio_node(&destination).unwrap();
 
         let new_buffer_opts = web_sys::AudioBufferOptions::new(self.ctx.length(), self.ctx.sample_rate());
-        let new_buffer = web_sys::AudioBuffer::new(&new_buffer_opts)?;
+        let new_buffer = web_sys::AudioBuffer::new(&new_buffer_opts).unwrap();
         b_source.set_buffer(Some(&new_buffer));
 
-        let a = Closure::wrap(Box::new(move |x: JsValue| {
+        let promise_cb = Closure::wrap(Box::new(move |x: JsValue| {
+//            let b:u32 = JsValue::into_serde(&x).unwrap().length();
+//            console::log_1(&b.into());
+//            console::log_1(ab?.into());
+//            let a = js_sys::Reflect::own_keys(&x).unwrap();
+//            console::log_1(&a.into());
+
+//            console::log_1(&x.into());
             console::log_1(&x.into());
+
+            /*
+            let obj = js_sys::Object::new();
+            let a = js_sys::Reflect::set(&obj, &"foo".into(), &x.into()).unwrap();
+            let ab = js_sys::Reflect::get(&obj, &"foo".into()).unwrap();*/
+            /* let b= match x.dyn_into(){
+                 Ok(t) => {
+                     let c:AudioBuffer= t.into_serde().unwrap();
+                     JsValue::from("aaa")
+                 },
+                 Err(E)=>{
+                     JsValue::from("error")
+                 }
+             };*/
+//            x.into_serde().unwrap()
         }) as Box<dyn FnMut(JsValue)>);
+
 
         /*let b = |x: ArrayBuffer| {
             console::log_1(&x.into());
         };*/
 
         b_source.start();
-        self.ctx.start_rendering()?.then(&a);
-        a.forget();
+//        Ok(self.ctx.start_rendering()?)
 
+        Ok(self.ctx.clone())
+//        promise_cb.forget();
+//        Ok(())
 //    let complete_func = &b;
 
 //        let c = js_sys::Function::new_with_args("off_ctx", "buffer"); //buffer undefined
@@ -95,8 +120,16 @@ impl M3dOfflineAudio {
              },
              None => ()
          };*/
-        /*
-                const coef= [
+    }
+
+    #[wasm_bindgen]
+    pub fn apply_filter(&self, audio_buffer: AudioBuffer) {
+        let buffer_size = audio_buffer.length();
+        let mut d = [0,0];
+        /*let coef =vec![
+            []
+        ];*/
+    /*    let coef = [
             {
                 fb: [1, -1.4791464805603027, 0.6930942535400391],
                 ff: [0.35, -0.4605122089385986, 0.11051515042781829]
@@ -113,10 +146,8 @@ impl M3dOfflineAudio {
                 fb: [1, -1.3877276182174683, 0.9699763059616089],
                 ff: [0.35, 0.29919922947883604, 0.04006841853260994]
             }
-        ]*/
+        ];*/
 
-
-        Ok(String::from("hi"))
     }
 }
 
