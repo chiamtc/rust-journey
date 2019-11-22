@@ -2,13 +2,11 @@ extern crate wasm_bindgen;
 extern crate web_sys;
 extern crate js_sys;
 
-use futures::{future, Future};
 use js_sys::{ArrayBuffer, Promise};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use serde::{Deserialize, Serialize};
-use wasm_bindgen_futures::{future_to_promise, spawn_local, JsFuture};
-use web_sys::{AudioBufferSourceNode, OfflineAudioContext, OfflineAudioContextOptions, AudioContext, OscillatorType, Request, RequestInit, RequestMode, Response, console};
+use wasm_bindgen_futures::{JsFuture, spawn_local, future_to_promise};
+use web_sys::{AudioBufferSourceNode, OfflineAudioContext, AudioContext, Request, RequestInit, RequestMode, Response, console};
 //use web_sys::OfflineAudioContext;
 
 /// A struct to hold some data from the github Branch API.
@@ -48,12 +46,79 @@ pub struct M3dAudio {
 pub struct M3dOfflineAudio {
     //    #[wasm_bindgen(vendor_prefix = webkit)]
     ctx: OfflineAudioContext,
-    b_source: AudioBufferSourceNode,
+//    b_source: AudioBufferSourceNode,
 
 //    offlineCtx:OfflineAudioContext
     //TODO add filter
 }
 
+#[wasm_bindgen]
+impl M3dOfflineAudio {
+    #[wasm_bindgen(constructor)]
+    pub fn new(offctx: OfflineAudioContext) -> Result<M3dOfflineAudio, JsValue> {
+        Ok(M3dOfflineAudio { ctx: offctx })
+    }
+
+    #[wasm_bindgen]
+    pub fn apply_filter(&self) -> Result<String, JsValue> {
+        let b_source = self.ctx.create_buffer_source()?;
+        let destination = self.ctx.destination();
+        b_source.connect_with_audio_node(&destination)?;
+
+        let new_buffer_opts = web_sys::AudioBufferOptions::new(self.ctx.length(), self.ctx.sample_rate());
+        let new_buffer = web_sys::AudioBuffer::new(&new_buffer_opts)?;
+        b_source.set_buffer(Some(&new_buffer));
+
+        let a = Closure::wrap(Box::new(move |x: JsValue| {
+            console::log_1(&x.into());
+        }) as Box<dyn FnMut(JsValue)>);
+
+        /*let b = |x: ArrayBuffer| {
+            console::log_1(&x.into());
+        };*/
+
+        b_source.start();
+        self.ctx.start_rendering()?.then(&a);
+        a.forget();
+
+//    let complete_func = &b;
+
+//        let c = js_sys::Function::new_with_args("off_ctx", "buffer"); //buffer undefined
+//    let c = js_sys::Function::new_no_args("off_ctx");
+
+//    off_ctx.set_oncomplete(Some(&c));
+//         self.ctx.set_oncomplete(Some(&c));
+        /* let e = match self.ctx.oncomplete() {
+             Some(t) => {
+                 console::log_1(&t.into());
+     //            console::log_1(t.call0(&JsValue::from(buffer)));
+             },
+             None => ()
+         };*/
+        /*
+                const coef= [
+            {
+                fb: [1, -1.4791464805603027, 0.6930942535400391],
+                ff: [0.35, -0.4605122089385986, 0.11051515042781829]
+            },
+            {
+                fb: [1, -1.785384178161621, 0.7876397967338562],
+                ff: [0.35, -0.39466336369514465, 0.4124599575996399]
+            },
+            {
+                fb: [1, -1.38728928565979, 0.8583449721336365],
+                ff: [0.35, -0.46513869166374205, 0.3464472651481628]
+            },
+            {
+                fb: [1, -1.3877276182174683, 0.9699763059616089],
+                ff: [0.35, 0.29919922947883604, 0.04006841853260994]
+            }
+        ]*/
+
+
+        Ok(String::from("hi"))
+    }
+}
 
 /*
 #[wasm_bindgen]
@@ -66,37 +131,6 @@ pub fn create_buffer_source(oac:OfflineAudioContext) -> AudioBufferSourceNode{
     oac.create_buffer_source()
 }*/
 
-
-#[wasm_bindgen]
-pub fn new_offline_ctx(number_of_channels: u32, length: u32, sample_rate: f32, buffer: ArrayBuffer) -> Result<M3dOfflineAudio, JsValue> {
-    let off_ctx = web_sys::OfflineAudioContext::new_with_context_options(&web_sys::OfflineAudioContextOptions::new(length, sample_rate))?;
-    let b_source = off_ctx.create_buffer_source()?;
-    let destination = off_ctx.destination();
-    b_source.connect_with_audio_node(&destination);
-
-    let new_buffer_opts = web_sys::AudioBufferOptions::new(length, sample_rate);
-    let new_buffer = web_sys::AudioBuffer::new(&new_buffer_opts)?;
-    b_source.set_buffer(Some(&new_buffer));
-
-    let a = Closure::wrap(Box::new(move || {}) as Box<dyn Fn()>);
-
-    let b = |x: ArrayBuffer| {
-        console::log_1(&x.into());
-    };
-
-    let c = js_sys::Function::new_no_args("abc");
-
-    let complete_func = &b;
-//    off_ctx.set_oncomplete(Some(&c));
-    let ee = off_ctx.set_oncomplete(Some(&c));
-  /*  let e = match off_ctx.oncomplete() {
-        Some(T) => {
-            T.bind(off_ctx);
-        },
-        None => Ok(JsValue::from("asdas"))
-    };*/
-    Ok(M3dOfflineAudio { ctx: off_ctx, b_source })
-}
 
 #[wasm_bindgen]
 impl M3dAudio {
@@ -112,6 +146,12 @@ impl M3dAudio {
     #[wasm_bindgen]
     pub fn decode(&self, buffer: js_sys::ArrayBuffer, decode_cb: &js_sys::Function) -> Result<js_sys::Promise, JsValue> {
         self.ctx.decode_audio_data_with_success_callback(&buffer, decode_cb)
+    }
+
+    #[wasm_bindgen]
+    pub fn new_offline_ctx(&self, number_of_channels: u32, length: u32, sample_rate: f32) -> Result<M3dOfflineAudio, JsValue> {
+        let off_ctx = web_sys::OfflineAudioContext::new_with_number_of_channels_and_length_and_sample_rate(number_of_channels, length, sample_rate)?;
+        M3dOfflineAudio::new(off_ctx)
     }
 }
 
