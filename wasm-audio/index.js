@@ -1,9 +1,5 @@
 let play = document.querySelector(".play");
-
 import ('./pkg/wasm_audio').then(async (m) => {
-
-    let oad = new OfflineAudioContext(1, 44100 * 40, 44100);
-    const source = oad.createBufferSource();
     const a = m.runner().then(async (data) => {
         const buffer = data;
         let fm = null;
@@ -26,6 +22,8 @@ import ('./pkg/wasm_audio').then(async (m) => {
 
             const ctx = await a;
 
+            const oad = new OfflineAudioContext(ctx.numberOfChannels, ctx.length, ctx.sampleRate);
+            const source = oad.createBufferSource();
             source.buffer = ctx;
             source.connect(oad.destination);
             oad.startRendering().then(function (renderedBuffer) {
