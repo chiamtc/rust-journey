@@ -24,15 +24,11 @@ import ('./pkg/wasm_audio').then(async (m) => {
 
 
             const audio_buffer = await a;
-            let offline_audio_ctx = fm.new_offline_ctx(audio_buffer.numberOfChannels, audio_buffer.length, audio_buffer.sampleRate);
-
-            /*const source = offline_audio_ctx.createBufferSource();
+            const offline_audio_ctx = new OfflineAudioContext(audio_buffer.numberOfChannels, audio_buffer.length, audio_buffer.sampleRate);
+            const source = offline_audio_ctx.createBufferSource();
             source.buffer = audio_buffer;
             source.connect(offline_audio_ctx.destination);
-            source.start();*/
-
-            offline_audio_ctx = fm.prep_buffer_and_rendering(offline_audio_ctx, audio_buffer);
-
+            source.start();
             offline_audio_ctx.startRendering().then(function (renderedBuffer) {
                 console.log('Rendering completed successfully');
                 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();

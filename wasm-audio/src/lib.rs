@@ -180,9 +180,58 @@ impl M3dAudio {
     }
 
     #[wasm_bindgen]
-    pub fn new_offline_ctx(&self, number_of_channels: u32, length: u32, sample_rate: f32) -> Result<M3dOfflineAudio, JsValue> {
-        let off_ctx = web_sys::OfflineAudioContext::new_with_number_of_channels_and_length_and_sample_rate(number_of_channels, length, sample_rate)?;
-        M3dOfflineAudio::new(off_ctx)
+    pub fn new_offline_ctx(&self, number_of_channels: u32, length: u32, sample_rate: f32) -> OfflineAudioContext {
+        let off_ctx = web_sys::OfflineAudioContext::new_with_number_of_channels_and_length_and_sample_rate(number_of_channels, length, sample_rate).unwrap();
+        off_ctx
+//        M3dOfflineAudio::new(off_ctx)
+    }
+
+    #[wasm_bindgen]
+    pub fn prep_buffer_and_rendering(&self,offline_audio_context:OfflineAudioContext, audio_buffer:AudioBuffer) -> Result<OfflineAudioContext,JsValue> {
+        let b_source = offline_audio_context.create_buffer_source().unwrap();
+        b_source.set_buffer(Some(&audio_buffer));
+        let destination = offline_audio_context.destination();
+        b_source.connect_with_audio_node(&destination).unwrap();
+
+        b_source.start();
+//        let new_buffer_opts = web_sys::AudioBufferOptions::new(self.ctx.length(), self.ctx.sample_rate());
+//        let new_buffer = web_sys::AudioBuffer::new(&new_buffer_opts).unwrap();
+
+
+        let promise_cb = Closure::wrap(Box::new(move |x: JsValue| {
+//            let b:u32 = JsValue::into_serde(&x).unwrap().length();
+//            console::log_1(&b.into());
+//            console::log_1(ab?.into());
+//            let a = js_sys::Reflect::own_keys(&x).unwrap();
+//            console::log_1(&a.into());
+
+//            console::log_1(&x.into());
+            console::log_1(&x.into());
+
+            /*
+            let obj = js_sys::Object::new();
+            let a = js_sys::Reflect::set(&obj, &"foo".into(), &x.into()).unwrap();
+            let ab = js_sys::Reflect::get(&obj, &"foo".into()).unwrap();*/
+            /* let b= match x.dyn_into(){
+                 Ok(t) => {
+                     let c:AudioBuffer= t.into_serde().unwrap();
+                     JsValue::from("aaa")
+                 },
+                 Err(E)=>{
+                     JsValue::from("error")
+                 }
+             };*/
+//            x.into_serde().unwrap()
+        }) as Box<dyn FnMut(JsValue)>);
+
+
+        /*let b = |x: ArrayBuffer| {
+            console::log_1(&x.into());
+        };*/
+
+//        Ok(self.ctx.start_rendering()?)
+
+        Ok(offline_audio_context)
     }
 }
 
