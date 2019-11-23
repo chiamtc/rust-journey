@@ -59,24 +59,29 @@ impl M3dOfflineAudio {
         Ok(M3dOfflineAudio { ctx: offctx })
     }
 
+    #[wasm_bindgen(method)]
+    pub fn get(&self) -> web_sys::OfflineAudioContext {
+        self.ctx.clone()
+    }
+
     #[wasm_bindgen]
-    pub fn prep_buffer_and_rendering(&self) -> Result<OfflineAudioContext,JsValue>{
-        let b_source = self.ctx.create_buffer_source().unwrap();
-        let destination = self.ctx.destination();
+    pub fn prep_buffer_and_rendering(&self, offline_audio_context: OfflineAudioContext, audio_buffer: AudioBuffer) -> Result<js_sys::Promise, JsValue> {
+        let b_source = offline_audio_context.create_buffer_source().unwrap();
+        b_source.set_buffer(Some(&audio_buffer));
+        let destination = offline_audio_context.destination();
         b_source.connect_with_audio_node(&destination).unwrap();
 
-        let new_buffer_opts = web_sys::AudioBufferOptions::new(self.ctx.length(), self.ctx.sample_rate());
-        let new_buffer = web_sys::AudioBuffer::new(&new_buffer_opts).unwrap();
-        b_source.set_buffer(Some(&new_buffer));
+        b_source.start();
+//        let new_buffer_opts = web_sys::AudioBufferOptions::new(self.ctx.length(), self.ctx.sample_rate());
+//        let new_buffer = web_sys::AudioBuffer::new(&new_buffer_opts).unwrap();
+
 
         let promise_cb = Closure::wrap(Box::new(move |x: JsValue| {
 //            let b:u32 = JsValue::into_serde(&x).unwrap().length();
 //            console::log_1(&b.into());
 //            console::log_1(ab?.into());
 //            let a = js_sys::Reflect::own_keys(&x).unwrap();
-//            console::log_1(&a.into());
 
-//            console::log_1(&x.into());
             console::log_1(&x.into());
 
             /*
@@ -95,59 +100,38 @@ impl M3dOfflineAudio {
 //            x.into_serde().unwrap()
         }) as Box<dyn FnMut(JsValue)>);
 
+        Ok(offline_audio_context.start_rendering()?)
 
-        /*let b = |x: ArrayBuffer| {
-            console::log_1(&x.into());
-        };*/
-
-        b_source.start();
-//        Ok(self.ctx.start_rendering()?)
-
-        Ok(self.ctx.clone())
-//        promise_cb.forget();
-//        Ok(())
-//    let complete_func = &b;
-
-//        let c = js_sys::Function::new_with_args("off_ctx", "buffer"); //buffer undefined
-//    let c = js_sys::Function::new_no_args("off_ctx");
-
-//    off_ctx.set_oncomplete(Some(&c));
-//         self.ctx.set_oncomplete(Some(&c));
-        /* let e = match self.ctx.oncomplete() {
-             Some(t) => {
-                 console::log_1(&t.into());
-     //            console::log_1(t.call0(&JsValue::from(buffer)));
-             },
-             None => ()
-         };*/
+//        Ok(offline_audio_context)
     }
+
+
 
     #[wasm_bindgen]
     pub fn apply_filter(&self, audio_buffer: AudioBuffer) {
         let buffer_size = audio_buffer.length();
-        let mut d = [0,0];
+        let mut d = [0, 0];
         /*let coef =vec![
             []
         ];*/
-    /*    let coef = [
-            {
-                fb: [1, -1.4791464805603027, 0.6930942535400391],
-                ff: [0.35, -0.4605122089385986, 0.11051515042781829]
-            },
-            {
-                fb: [1, -1.785384178161621, 0.7876397967338562],
-                ff: [0.35, -0.39466336369514465, 0.4124599575996399]
-            },
-            {
-                fb: [1, -1.38728928565979, 0.8583449721336365],
-                ff: [0.35, -0.46513869166374205, 0.3464472651481628]
-            },
-            {
-                fb: [1, -1.3877276182174683, 0.9699763059616089],
-                ff: [0.35, 0.29919922947883604, 0.04006841853260994]
-            }
-        ];*/
-
+        /*    let coef = [
+                {
+                    fb: [1, -1.4791464805603027, 0.6930942535400391],
+                    ff: [0.35, -0.4605122089385986, 0.11051515042781829]
+                },
+                {
+                    fb: [1, -1.785384178161621, 0.7876397967338562],
+                    ff: [0.35, -0.39466336369514465, 0.4124599575996399]
+                },
+                {
+                    fb: [1, -1.38728928565979, 0.8583449721336365],
+                    ff: [0.35, -0.46513869166374205, 0.3464472651481628]
+                },
+                {
+                    fb: [1, -1.3877276182174683, 0.9699763059616089],
+                    ff: [0.35, 0.29919922947883604, 0.04006841853260994]
+                }
+            ];*/
     }
 }
 
@@ -173,12 +157,18 @@ impl M3dAudio {
         })
     }
 
+    #[wasm_bindgen(method)]
+    pub fn get(&self) -> web_sys::AudioContext {
+        self.ctx.clone()
+    }
+
     //OG working code to return a promise
     #[wasm_bindgen]
     pub fn decode(&self, buffer: js_sys::ArrayBuffer, decode_cb: &js_sys::Function) -> Result<js_sys::Promise, JsValue> {
         self.ctx.decode_audio_data_with_success_callback(&buffer, decode_cb)
     }
 
+    //to be deprecated
     #[wasm_bindgen]
     pub fn new_offline_ctx(&self, number_of_channels: u32, length: u32, sample_rate: f32) -> OfflineAudioContext {
         let off_ctx = web_sys::OfflineAudioContext::new_with_number_of_channels_and_length_and_sample_rate(number_of_channels, length, sample_rate).unwrap();
@@ -186,26 +176,31 @@ impl M3dAudio {
 //        M3dOfflineAudio::new(off_ctx)
     }
 
-    #[wasm_bindgen]
-    pub fn prep_buffer_and_rendering(&self,offline_audio_context:OfflineAudioContext, audio_buffer:AudioBuffer) -> Result<OfflineAudioContext,JsValue> {
-        let b_source = offline_audio_context.create_buffer_source().unwrap();
-        b_source.set_buffer(Some(&audio_buffer));
-        let destination = offline_audio_context.destination();
-        b_source.connect_with_audio_node(&destination).unwrap();
 
-        b_source.start();
+    #[wasm_bindgen]
+    pub fn new_offline_ctx2(&self, number_of_channels: u32, length: u32, sample_rate: f32) -> Result<M3dOfflineAudio, JsValue> {
+        let off_ctx = web_sys::OfflineAudioContext::new_with_number_of_channels_and_length_and_sample_rate(number_of_channels, length, sample_rate).unwrap();
+        M3dOfflineAudio::new(off_ctx)
+    }
+
+    #[wasm_bindgen]
+    pub fn prep_buffer_and_rendering(&self, audio_buffer: AudioBuffer) -> web_sys::AudioBufferSourceNode {//-> Result<js_sys::Promise, JsValue> {
+        let b_source = self.ctx.create_buffer_source().unwrap();
+        b_source.set_buffer(Some(&audio_buffer));
+        let destination = self.ctx.destination();
+        b_source.connect_with_audio_node(&destination).unwrap();
+        b_source
+//        b_source.start();
 //        let new_buffer_opts = web_sys::AudioBufferOptions::new(self.ctx.length(), self.ctx.sample_rate());
 //        let new_buffer = web_sys::AudioBuffer::new(&new_buffer_opts).unwrap();
 
 
-        let promise_cb = Closure::wrap(Box::new(move |x: JsValue| {
+       /* let promise_cb = Closure::wrap(Box::new(move |x: JsValue| {
 //            let b:u32 = JsValue::into_serde(&x).unwrap().length();
 //            console::log_1(&b.into());
 //            console::log_1(ab?.into());
 //            let a = js_sys::Reflect::own_keys(&x).unwrap();
-//            console::log_1(&a.into());
 
-//            console::log_1(&x.into());
             console::log_1(&x.into());
 
             /*
@@ -222,20 +217,15 @@ impl M3dAudio {
                  }
              };*/
 //            x.into_serde().unwrap()
-        }) as Box<dyn FnMut(JsValue)>);
+        }) as Box<dyn FnMut(JsValue)>);*/
 
+//        Ok(offline_audio_context.start_rendering()?)
 
-        /*let b = |x: ArrayBuffer| {
-            console::log_1(&x.into());
-        };*/
-
-//        Ok(self.ctx.start_rendering()?)
-
-        Ok(offline_audio_context)
+//        Ok(offline_audio_context)
     }
 }
 
-#[wasm_bindgen(js_name = "runner")]
+# [wasm_bindgen(js_name = "runner")]
 pub async fn run() -> Result<JsValue, JsValue> {
     let mut opts = RequestInit::new();
     opts.method("GET");

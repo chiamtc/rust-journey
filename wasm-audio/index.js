@@ -16,24 +16,35 @@ import ('./pkg/wasm_audio').then(async (m) => {
             });*/
 
             const a = new Promise((resolve, reject) => {
-                fm.decode(buffer, (res) => {
-                    console.log('res',res)
-                    res !== null ? resolve(res) : reject("Failed to decode the audio, check WASM code")
-                });
+                fm.decode(buffer, (res) => res !== null ? resolve(res) : reject("Failed to decode the audio, check WASM code"));
             })
 
 
             const audio_buffer = await a;
             let offline_audio_ctx = fm.new_offline_ctx(audio_buffer.numberOfChannels, audio_buffer.length, audio_buffer.sampleRate);
-
+            let offline_audio_ctx2 = fm.new_offline_ctx2(audio_buffer.numberOfChannels, audio_buffer.length, audio_buffer.sampleRate);
+            console.log('offline_audio_ctx2.get()',offline_audio_ctx2.get());
             /*const source = offline_audio_ctx.createBufferSource();
             source.buffer = audio_buffer;
             source.connect(offline_audio_ctx.destination);
             source.start();*/
 
-            offline_audio_ctx = fm.prep_buffer_and_rendering(offline_audio_ctx, audio_buffer);
+            offline_audio_ctx2 = offline_audio_ctx2.prep_buffer_and_rendering(offline_audio_ctx, audio_buffer);
+            offline_audio_ctx2.then(function (renderedBuffer) {
+                console.log('Rendering completed successfully');
+                var audioCtx = fm.get();//new (window.AudioContext || window.webkitAudioContext)();
+                var song = fm.prep_buffer_and_rendering(renderedBuffer);
+                // var song = audioCtx.createBufferSource();
+                // song.buffer = renderedBuffer;
+                // song.connect(audioCtx.destination);
+                play.onclick = function () {
+                    song.start();
+                }
+            }).catch(function (err) {
+                console.log('Rendering failed: ' + err);
+            })
 
-            offline_audio_ctx.startRendering().then(function (renderedBuffer) {
+         /*   offline_audio_ctx.startRendering().then(function (renderedBuffer) {
                 console.log('Rendering completed successfully');
                 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 var song = audioCtx.createBufferSource();
@@ -44,8 +55,7 @@ import ('./pkg/wasm_audio').then(async (m) => {
                 }
             }).catch(function (err) {
                 console.log('Rendering failed: ' + err);
-                // Note: The promise should reject when startRendering is called a second time on an OfflineAudioContext
-            });
+            });*/
             // const bSource = m.create_buffer_source(offline_audio_ctx);
             /*    var song;
                 // document.getElementById("playbtn").addEventListener('click', async() => {
