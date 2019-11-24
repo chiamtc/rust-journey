@@ -34,6 +34,13 @@ import ('./pkg/wasm_audio').then(async (m) => {
                 console.log('Rendering completed successfully');
                 var audioCtx = fm.get();//new (window.AudioContext || window.webkitAudioContext)();
                 var song = fm.prep_buffer_and_rendering(renderedBuffer);
+                /*
+                * TODO:
+                * 1. get filter coefficients from JS format into Rust format (tuples , array or vec or hashmap)
+                * 2. use renderedBuffer variable to apply the filter in Rust. Ideally, M3dAudio struct should have a method called apply_filter
+                * Signature : apply_filter(self:M3dAudio, coefficients: TBD type) -> web_sys:: AudioBuffer
+                * 3. hopes that play.onClick has the actual buffer with custom filter
+                * */
                 // var song = audioCtx.createBufferSource();
                 // song.buffer = renderedBuffer;
                 // song.connect(audioCtx.destination);
