@@ -207,6 +207,7 @@ impl M3dAudio {
             }
         }*/
 
+        //read this https://www.reddit.com/r/rust/comments/61x2yd/idiomatic_way_to_handle_modifying_vectors_in_a/
         for j in coefs.iter(){
              for i in 0..length{
                 output[i as usize]= j.ff[0] + channel_data[i as usize] + d[0];
