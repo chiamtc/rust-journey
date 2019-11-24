@@ -34,6 +34,37 @@ extern "C" {
     fn new(number_of_channels: u32, length: u32, sample_rate: f32) -> OfflineAudioContext;
 
 }*/
+
+use std::ops::Index;
+
+enum Nucleotide {
+    fb,
+    ff,
+}
+
+#[derive(Debug)]
+struct Coefs {
+    fb: Vec<f32>,
+    ff: Vec<f32>,
+}
+
+impl Coefs{
+    pub fn get(&self, iteration:u32){
+    }
+}
+/*
+impl Index<Nucleotide> for Coefs {
+    type Output = usize;
+
+    fn index(&self, nucleotide: Nucleotide) -> &Self::Output {
+        match nucleotide {
+            Nucleotide::fb => &self.fb,
+            Nucleotide::ff => &self.ff
+        }
+    }
+}*/
+
+
 #[wasm_bindgen]
 pub struct M3dAudio {
     ctx: AudioContext,
@@ -148,6 +179,63 @@ impl M3dAudio {
  //            console::log_1(ab?.into());
  //            let a = js_sys::Reflect::own_keys(&x).unwrap();
          }) as Box<dyn FnMut(JsValue)>);*/
+    }
+
+    #[wasm_bindgen]
+    pub fn apply_m3d_filter(&self, audio_buffer: AudioBuffer) -> web_sys::AudioBufferSourceNode {
+        let length = audio_buffer.length();
+        let mut channel_data: Vec<f32> = audio_buffer.get_channel_data(0).unwrap();
+        let mut d: Vec<f32> = vec![0.0, 0.0];
+
+        let output_buff = self.ctx.create_buffer(audio_buffer.number_of_channels(), audio_buffer.length(), audio_buffer.sample_rate()).unwrap();
+        let mut output = output_buff.get_channel_data(0).unwrap();
+        let coefs: Vec<Coefs> = vec![
+            Coefs { fb: vec![1.0, -1.4791464805603027, 0.6930942535400391], ff: vec![0.35, -0.4605122089385986, 0.11051515042781829] },
+            Coefs { fb: vec![1.0, -1.785384178161621, 0.7876397967338562], ff: vec![0.35, -0.39466336369514465, 0.4124599575996399] },
+            Coefs { fb: vec![1.0, -1.38728928565979, 0.8583449721336365], ff: vec![0.35, -0.46513869166374205, 0.3464472651481628] },
+            Coefs { fb: vec![1.0, -1.3877276182174683, 0.9699763059616089], ff: vec![0.35, 0.29919922947883604, 0.04006841853260994] },
+        ];
+       /* let mut coefs= vec![
+           vec![vec![1.0, -1.4791464805603027, 0.6930942535400391], vec![0.35, -0.4605122089385986, 0.11051515042781829]]
+           ];
+
+        for j in &coefs {
+            for z in j {
+                for i in 0..length {
+                    let z = (z[0] as f32 * channel_data[i as usize] + d[0]) as f32;
+                }
+            }
+        }*/
+
+        for j in coefs.iter(){
+             for i in 0..length{
+                output[i as usize]= j.ff[0] + channel_data[i as usize] + d[0];
+            }
+        }
+
+        let b_source = self.ctx.create_buffer_source().unwrap();
+        b_source.set_buffer(Some(&audio_buffer));
+        let destination = self.ctx.destination();
+        b_source.connect_with_audio_node(&destination).unwrap();
+        b_source
+        /*    let coef = [
+                {
+                    fb: [1, -1.4791464805603027, 0.6930942535400391],
+                    ff: [0.35, -0.4605122089385986, 0.11051515042781829]
+                },
+                {
+                    fb: [1, -1.785384178161621, 0.7876397967338562],
+                    ff: [0.35, -0.39466336369514465, 0.4124599575996399]
+                },
+                {
+                    fb: [1, -1.38728928565979, 0.8583449721336365],
+                    ff: [0.35, -0.46513869166374205, 0.3464472651481628]
+                },
+                {
+                    fb: [1, -1.3877276182174683, 0.9699763059616089],
+                    ff: [0.35, 0.29919922947883604, 0.04006841853260994]
+                }
+            ];*/
     }
 }
 
