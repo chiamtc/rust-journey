@@ -48,9 +48,8 @@ struct Coefs {
     ff: Vec<f32>,
 }
 
-impl Coefs{
-    pub fn get(&self, iteration:u32){
-    }
+impl Coefs {
+    pub fn get(&self, iteration: u32) {}
 }
 /*
 impl Index<Nucleotide> for Coefs {
@@ -168,7 +167,7 @@ impl M3dAudio {
     pub fn prep_buffer_source(&self, audio_buffer: AudioBuffer) -> web_sys::AudioBufferSourceNode {//-> Result<js_sys::Promise, JsValue> {
         let b_source = self.ctx.create_buffer_source().unwrap();
         b_source.set_buffer(Some(&audio_buffer));
-        let destination = self.ctx.destination();
+        let destination = self.get().destination();
         b_source.connect_with_audio_node(&destination).unwrap();
         b_source
         /*
@@ -182,7 +181,7 @@ impl M3dAudio {
     }
 
     #[wasm_bindgen]
-    pub fn apply_m3d_filter(&self, audio_buffer: AudioBuffer) -> web_sys::AudioBufferSourceNode {
+    pub fn apply_m3d_filter(&self, audio_buffer: AudioBuffer) -> Vec<f32> {//-> web_sys::AudioBuffer {
         let length = audio_buffer.length();
         let mut channel_data: Vec<f32> = audio_buffer.get_channel_data(0).unwrap();
         let mut d: Vec<f32> = vec![0.0, 0.0];
@@ -195,30 +194,33 @@ impl M3dAudio {
             Coefs { fb: vec![1.0, -1.38728928565979, 0.8583449721336365], ff: vec![0.35, -0.46513869166374205, 0.3464472651481628] },
             Coefs { fb: vec![1.0, -1.3877276182174683, 0.9699763059616089], ff: vec![0.35, 0.29919922947883604, 0.04006841853260994] },
         ];
-       /* let mut coefs= vec![
-           vec![vec![1.0, -1.4791464805603027, 0.6930942535400391], vec![0.35, -0.4605122089385986, 0.11051515042781829]]
-           ];
-
-        for j in &coefs {
-            for z in j {
-                for i in 0..length {
-                    let z = (z[0] as f32 * channel_data[i as usize] + d[0]) as f32;
-                }
-            }
-        }*/
-
         //read this https://www.reddit.com/r/rust/comments/61x2yd/idiomatic_way_to_handle_modifying_vectors_in_a/
-        for j in coefs.iter(){
-             for i in 0..length{
-                output[i as usize]= j.ff[0] + channel_data[i as usize] + d[0];
+        for j in coefs.iter() {
+            for i in 0..2 {
+                output[i as usize] = j.ff[0] + channel_data[i as usize] + d[0];
+
+                console::log_1(&j.ff[0].into());
+                console::log_1(&channel_data[i as usize].into());
+                console::log_1(&d[0].into());
+                /*
+                d[0] = (j.ff[1] * channel_data[i as usize]) - (j.fb[1] * output[i as usize] + d[1]);
+                d[1] = (j.ff[2] * channel_data[i as usize]) - (j.fb[2] * output[i as usize]);*/
+//                channel_data[i as usize] = output[i as usize];
             }
+            d[0] = 0.0;
+            d[1] = 0.0;
         }
 
-        let b_source = self.ctx.create_buffer_source().unwrap();
+       /* let filtered_buffer = self.ctx.create_buffer(audio_buffer.number_of_channels(), audio_buffer.length(), audio_buffer.sample_rate()).unwrap();
+        filtered_buffer.copy_to_channel(&mut output, 0);
+        filtered_buffer*/
+        output
+        /*   console::log_1(&output_buff.get_channel_data(0).unwrap()[0].into());
+        let b_source = self.get().create_buffer_source().unwrap();
         b_source.set_buffer(Some(&audio_buffer));
-        let destination = self.ctx.destination();
+        let destination = self.get().destination();
         b_source.connect_with_audio_node(&destination).unwrap();
-        b_source
+        b_source*/
         /*    let coef = [
                 {
                     fb: [1, -1.4791464805603027, 0.6930942535400391],
