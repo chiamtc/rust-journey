@@ -1,73 +1,29 @@
 
+/* some docs about web:sys Promise.then(promise_cb) usage.
+old promise callback, was using promise_cb when context.oncomplete = function .. in js
+let promise_cb = Closure::wrap(Box::new(move |x: JsValue| {
+           let b:u32 = JsValue::into_serde(&x).unwrap().length();
+           console::log_1(&b.into());
+           console::log_1(ab?.into());
+           let a = js_sys::Reflect::own_keys(&x).unwrap();
+   }) as Box<dyn FnMut(JsValue)>);*/
 
-// define variables
-var pre = document.querySelector('pre');
-var myScript = document.querySelector('script');
-var play = document.querySelector('.play');
-var stop = document.querySelector('.stop');
-// use XHR to load an audio track, and
-// decodeAudioData to decode it and stick it in a buffer.
-// Then we put the buffer into the source
-async function getData() {
-    // request = new XMLHttpRequest();
-    const request = new Request("https://firebasestorage.googleapis.com/v0/b/podstetheedata.appspot.com/o/human_samples%2F-Lsxlh74yy4ASUohCFEA.wav?alt=media&token=6088e994-73b6-47a4-bc0d-a1090cb3b288");
-    // request.open('GET', "https://firebasestorage.googleapis.com/v0/b/podstetheedata.appspot.com/o/human_samples%2F-Lsxlh74yy4ASUohCFEA.wav?alt=media&token=6088e994-73b6-47a4-bc0d-a1090cb3b288", true);
-    const response = await fetch(request);
-    const audioData = await response.arrayBuffer();
-    var audioCtx = new AudioContext();
-    var offlineCtx = new OfflineAudioContext(1, 44100 * 40, 44100);
-    source = offlineCtx.createBufferSource();
-    audioCtx.decodeAudioData(audioData, function (buffer) {
-        source.buffer = buffer;
-        source.connect(offlineCtx.destination);
-        source.start();
-        //source.loop = true;
-        console.log(offlineCtx);
-        offlineCtx.startRendering().then(function (renderedBuffer) {
-            console.log('Rendering completed successfully');
-            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            var song = audioCtx.createBufferSource();
-            song.buffer = renderedBuffer;
-            song.connect(audioCtx.destination);
-            play.onclick = function () {
-                song.start();
-            }
-        }).catch(function (err) {
-            console.log('Rendering failed: ' + err);
-            // Note: The promise should reject when startRendering is called a second time on an OfflineAudioContext
-        });
-    });
-    // request.responseType = 'arraybuffer';
-    /*request.onload = function () {
-        var audioData = request.response;
-        // define online and offline audio context
-        var audioCtx = new AudioContext();
-        var offlineCtx = new OfflineAudioContext(1, 44100 * 40, 44100);
-        source = offlineCtx.createBufferSource();
-        audioCtx.decodeAudioData(audioData, function (buffer) {
-            source.buffer = buffer;
-            source.connect(offlineCtx.destination);
-            source.start();
-            //source.loop = true;
-            console.log(offlineCtx);
-            offlineCtx.startRendering().then(function (renderedBuffer) {
-                console.log('Rendering completed successfully');
-                var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                var song = audioCtx.createBufferSource();
-                song.buffer = renderedBuffer;
-                song.connect(audioCtx.destination);
-                play.onclick = function () {
-                    song.start();
-                }
-            }).catch(function (err) {
-                console.log('Rendering failed: ' + err);
-                // Note: The promise should reject when startRendering is called a second time on an OfflineAudioContext
-            });
-        });
-    }
-    request.send();*/
-}
 
-// Run getData to start the process off
-getData();
-// dump script to pre element
+/* super old code, instantiate offlineaudiocontext without web::sys
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(vendor_prefix = webkit)]
+    pub type OfflineAudioContext;
+
+    pub type AudioBufferSourceNode;
+
+    static offline_audio_ctx: OfflineAudioContext;
+
+
+    #[wasm_bindgen(method, js_name=createBufferSource)]
+    fn create_buffer_source(oac:&OfflineAudioContext) -> AudioBufferSourceNode;
+
+    #[wasm_bindgen(constructor)]
+    fn new(number_of_channels: u32, length: u32, sample_rate: f32) -> OfflineAudioContext;
+
+}*/
