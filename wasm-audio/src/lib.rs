@@ -181,40 +181,88 @@ impl M3dAudio {
     }
 
     #[wasm_bindgen]
-    pub fn apply_m3d_filter(&self, audio_buffer: AudioBuffer) -> Vec<f32> {//-> web_sys::AudioBuffer {
-        let length = audio_buffer.length();
+    pub fn apply_m3d_filter(&self, audio_buffer: AudioBuffer) -> web_sys::AudioBuffer { //-> Vec<f32> {
+        let length = audio_buffer.length() as u32;
         let mut channel_data: Vec<f32> = audio_buffer.get_channel_data(0).unwrap();
         let mut d: Vec<f32> = vec![0.0, 0.0];
 
         let output_buff = self.ctx.create_buffer(audio_buffer.number_of_channels(), audio_buffer.length(), audio_buffer.sample_rate()).unwrap();
         let mut output = output_buff.get_channel_data(0).unwrap();
-        let coefs: Vec<Coefs> = vec![
-            Coefs { fb: vec![1.0, -1.4791464805603027, 0.6930942535400391], ff: vec![0.35, -0.4605122089385986, 0.11051515042781829] },
-            Coefs { fb: vec![1.0, -1.785384178161621, 0.7876397967338562], ff: vec![0.35, -0.39466336369514465, 0.4124599575996399] },
-            Coefs { fb: vec![1.0, -1.38728928565979, 0.8583449721336365], ff: vec![0.35, -0.46513869166374205, 0.3464472651481628] },
-            Coefs { fb: vec![1.0, -1.3877276182174683, 0.9699763059616089], ff: vec![0.35, 0.29919922947883604, 0.04006841853260994] },
+        let extended_coefs: Vec<Coefs> = vec![
+            Coefs {
+                fb: vec![1.0, -1.4791464805603027, 0.6930942535400391],
+                ff: vec![0.35, -0.4605122089385986, 0.11051515042781829],
+            },
+            Coefs {
+                fb: vec![1.0, -1.785384178161621, 0.7876397967338562],
+                ff: vec![0.35, -0.39466336369514465, 0.4124599575996399]
+            },
+            Coefs {
+                fb: vec![1.0, -1.38728928565979, 0.8583449721336365],
+                ff: vec![0.35, -0.46513869166374205, 0.3464472651481628]
+            },
+            Coefs {
+                fb: vec![1.0, -1.3877276182174683, 0.9699763059616089],
+                ff: vec![0.35, 0.29919922947883604, 0.04006841853260994]
+            },
         ];
-        //read this https://www.reddit.com/r/rust/comments/61x2yd/idiomatic_way_to_handle_modifying_vectors_in_a/
-        for j in coefs.iter() {
-            for i in 0..2 {
-                output[i as usize] = j.ff[0] + channel_data[i as usize] + d[0];
 
-                console::log_1(&j.ff[0].into());
-                console::log_1(&channel_data[i as usize].into());
-                console::log_1(&d[0].into());
-                /*
-                d[0] = (j.ff[1] * channel_data[i as usize]) - (j.fb[1] * output[i as usize] + d[1]);
-                d[1] = (j.ff[2] * channel_data[i as usize]) - (j.fb[2] * output[i as usize]);*/
-//                channel_data[i as usize] = output[i as usize];
+        let bell_coefs: Vec<Coefs> = vec![
+            Coefs {
+                fb: vec![1.00, -1.8633348941802979, 0.8801209330558777],
+                ff: vec![0.09732796562328783, -0.10529189079474921, 0.026142444150071956]
+            },
+            Coefs {
+                fb: vec![1.00, -1.821143627166748, 0.9694930911064148],
+                ff: vec![0.9176731674323697, -1.6463434709716742, 0.9176284335265728]
+            },
+            Coefs {
+                fb: vec![1.00, -1.8136717081069946, 0.9057400822639465],
+                ff: vec![0.260635334442507, -0.18719826837461115, 0.003026156143995027]
+            },
+            Coefs {
+                fb: vec![1.00, -1.9527064561843872, 0.9532656073570251],
+                ff: vec![0.267510268594725, -0.3677071379112296, 0.10019812325780178]
+            },
+        ];
+
+       /* bell {
+            fb: [1, -1.8633348941802979, 0.8801209330558777],
+            ff: [0.09732796562328783, -0.10529189079474921, 0.026142444150071956]
+        },
+        {
+            fb: [1, -1.821143627166748, 0.9694930911064148],
+            ff: [0.9176731674323697, -1.6463434709716742, 0.9176284335265728]
+        },
+        {
+            fb: [1, -1.8136717081069946, 0.9057400822639465],
+            ff: [0.260635334442507, -0.18719826837461115, 0.003026156143995027]
+        },
+        {
+            fb: [1, -1.9527064561843872, 0.9532656073570251],
+            ff: [0.267510268594725, -0.3677071379112296, 0.10019812325780178]
+        }*/
+        //read this https://www.reddit.com/r/rust/comments/61x2yd/idiomatic_way_to_handle_modifying_vectors_in_a/
+
+        for j in bell_coefs.iter() {
+            for i in 0..length {
+                output[i as usize] = j.ff[0] * channel_data[i as usize] + d[0];
+                d[0] = j.ff[1] * channel_data[i as usize] - j.fb[1] * output[i as usize] + d[1];
+                d[1] = j.ff[2] * channel_data[i as usize] - j.fb[2] * output[i as usize];
+                channel_data[i as usize] = output[i as usize];
+//                output[i as usize]  = output[i as usize] * 1.5;
             }
             d[0] = 0.0;
             d[1] = 0.0;
         }
 
-       /* let filtered_buffer = self.ctx.create_buffer(audio_buffer.number_of_channels(), audio_buffer.length(), audio_buffer.sample_rate()).unwrap();
+        let filtered_buffer = self.ctx.create_buffer(audio_buffer.number_of_channels(), audio_buffer.length(), audio_buffer.sample_rate()).unwrap();
         filtered_buffer.copy_to_channel(&mut output, 0);
-        filtered_buffer*/
-        output
+        filtered_buffer
+//        audio_buffer.copy_to_channel(&mut output, 0);
+//        audio_buffer
+//        output_buff //no luck
+//        output
         /*   console::log_1(&output_buff.get_channel_data(0).unwrap()[0].into());
         let b_source = self.get().create_buffer_source().unwrap();
         b_source.set_buffer(Some(&audio_buffer));
@@ -242,7 +290,7 @@ impl M3dAudio {
     }
 }
 
-# [wasm_bindgen(js_name = "runner")]
+#[wasm_bindgen(js_name = "runner")]
 pub async fn run() -> Result<JsValue, JsValue> {
     let mut opts = RequestInit::new();
     opts.method("GET");

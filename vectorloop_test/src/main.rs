@@ -11,8 +11,13 @@ fn main() {
         Coefs{ fb : vec![1.0, -1.785384178161621, 0.7876397967338562], ff: vec![0.35, -0.39466336369514465, 0.4124599575996399]}
     ];
 
+
+    let test_vecs = vec![0,1,2,3,4];
+
     for i in coefs.iter(){
-        println!("{:?}, {:?}, {:?}", i.fb[0], i.fb[1], i.fb[2]);
+        for j in 0..2 {
+            println!("{:?} - {:?}", i.ff[1], test_vecs[j as usize]);
+        }
     }
 
   /*  let coefs = vec![
