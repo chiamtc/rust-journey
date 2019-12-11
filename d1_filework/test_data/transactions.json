@@ -2,5 +2,5 @@
 	{"from":"Matt", "to":"Andy", "amount":170},
 	{"from":"Matt", "to":"Dave", "amount":50},
 	{"from":"Matt", "to":"David", "amount":120},
-	{"from":"Matt", "to":"John", "amount:250}
+	{"from":"Matt", "to":"John", "amount":250}
 ]

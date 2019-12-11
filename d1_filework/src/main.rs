@@ -10,7 +10,7 @@ pub struct Transaction{
 fn main() {
     println!("Hello, world!");
 
-    let trans = get_transaction("test_data/transactions.json").expect("Could not load transactions");
+    let trans = get_transaction_b("test_data/transactions.json").expect("Could not load transactions");
     for t in trans{
         println!("{:?}", t);
     }
@@ -28,4 +28,10 @@ fn get_transaction(fname: &str) -> Result<Vec<Transaction>, String>{
     };
     Ok(t)
 //    Ok(Vec::new())
+}
+
+fn get_transaction_b(fname: &str) -> Result<Vec<Transaction>, String>{
+    std::fs::read_to_string(fname)
+        .map_err(|e| e.to_string())
+        .and_then(|ld| serde_json::from_str(&ld).map_err(|e| e.to_string()))
 }
