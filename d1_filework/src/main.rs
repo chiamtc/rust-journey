@@ -38,6 +38,7 @@ pub struct Transaction {
     amount: u64,
 }
 
+//we implemented "From<&'static str>" for main() to return Result<(),TransactionError>
 fn main() -> Result<(), TransactionError>{
     println!("Hello, world!");
 /*
@@ -48,12 +49,15 @@ fn main() -> Result<(), TransactionError>{
     }
 */
 
+    //ok_or() convert option to Result by providing an error if option is none.
     let t = get_first_transaction_for("test_data/transactions.json", "Matt").ok_or("could not get first transaction")?;
     println!("Matt's first transaction : {:?}", t);
     Ok(())
 }
 
+//using Option
 fn get_first_transaction_for(fname: &str, uname: &str) -> Option<Transaction> {
+    //ok() transform Result into Option. refers to docs
     let trans = get_transaction_type_error(fname).ok()?;
     for t in trans {
         if t.from == uname {
@@ -63,6 +67,7 @@ fn get_first_transaction_for(fname: &str, uname: &str) -> Option<Transaction> {
     None
 }
 
+//verbose way
 fn get_transaction(fname: &str) -> Result<Vec<Transaction>, String> {
     let s = match std::fs::read_to_string(fname) {
         Ok(v) => v,
@@ -90,6 +95,8 @@ fn get_transaction_type_error(fname: &str) -> Result<Vec<Transaction>, Transacti
 //    Ok(serde_json::from_str(&std::fs::read_to_string(fname)?)?
 }
 
+
+//combinators
 fn get_transaction_b(fname: &str) -> Result<Vec<Transaction>, String> {
     std::fs::read_to_string(fname)
         .map_err(|e| e.to_string())
