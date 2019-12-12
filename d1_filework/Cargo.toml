@@ -4,6 +4,13 @@ version = "0.1.0"
 authors = ["Chiam Tat Cheng <chiamcheng@gmail.com>"]
 edition = "2018"
 
+[lib]
+name="d1_filework"
+path="src/lib.rs"
+
+[[bin]]
+name="d1_load_trans"
+path="src/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
