@@ -1,9 +1,15 @@
+extern crate failure;
 
-#[derive(Debug)]
+use failure::Error;
+use failure_derive::*;
+#[derive(Debug, Fail)]
 pub enum TransactionError {
+    #[fail(display = "invalid file loading error: {}", 0)]
     LoadError(std::io::Error),
+    #[fail(display = "parse error: {}", 0)]
     ParseError(serde_json::Error),
-    Mess(&'static str)
+    #[fail(display = "message error: {}", 0)]
+    Mess(&'static str),
 }
 
 impl From<std::io::Error> for TransactionError {
@@ -24,8 +30,8 @@ impl From<serde_json::Error> for TransactionError {
     }
 }
 
-impl From<&'static str> for TransactionError{
-    fn from(e:&'static str ) -> Self{
+impl From<&'static str> for TransactionError {
+    fn from(e: &'static str) -> Self {
         TransactionError::Mess(e)
     }
 }

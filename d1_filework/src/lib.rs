@@ -10,8 +10,8 @@ pub struct Transaction {
 }
 
 
-//using Option
-pub fn get_first_transaction_for(fname: &str, uname: &str) -> Option<Transaction> {
+//using Option , before using failure crate
+/*pub fn get_first_transaction_for(fname: &str, uname: &str) -> Option<Transaction> {
     //ok() transform Result into Option. refers to docs
     let trans = get_transaction_type_error(fname).ok()?;
     for t in trans {
@@ -20,6 +20,18 @@ pub fn get_first_transaction_for(fname: &str, uname: &str) -> Option<Transaction
         }
     }
     None
+}*/
+
+//using failure crate, converting Option to Result usage
+pub fn get_first_transaction_for(fname: &str, uname: &str) -> Result<Transaction, failure::Error> {
+    //ok() transform Result into Option. refers to docs
+    let trans = get_transaction_type_error(fname)?;
+    for t in trans {
+        if t.from == uname {
+            return Ok(t)
+        }
+    }
+    Err(TransactionError::Mess("could not find transaction with that name").into())
 }
 
 //verbose way
