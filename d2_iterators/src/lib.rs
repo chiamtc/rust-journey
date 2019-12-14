@@ -5,6 +5,7 @@ pub struct RangeIterator {
 }
 
 pub mod gen_range;
+pub mod combi;
 impl RangeIterator {
     pub fn new(start: i32, stop: i32, step: i32) -> Self {
         RangeIterator {
@@ -21,7 +22,7 @@ impl Iterator for RangeIterator {
     type Item = i32;
     fn next(&mut self) -> Option<Self::Item> {
         if self.curr >= self.stop {
-            return None
+            return None;
         }
         let res = self.curr;
         self.curr += self.step;
@@ -32,13 +33,15 @@ impl Iterator for RangeIterator {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn it_works() {
-        let mut m =0 ;
-        let it = RangeIterator::new(5,12,3);
-        for s in it{
+        let mut m = 0;
+        let it = RangeIterator::new(5, 12, 3);
+        for s in it {
             m += s;
         }
-        assert_eq!(m, 5+8+11)
+        assert_eq!(m, 5 + 8 + 11)
     }
+
 }

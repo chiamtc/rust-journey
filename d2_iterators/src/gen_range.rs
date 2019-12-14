@@ -48,4 +48,11 @@ mod tests {
         }
         assert_eq!(m, 5.0 + 7.5 + 10.0)
     }
+
+    #[test]
+    fn filter() {
+        //filter() creates and returns a new iterator
+        let v: i32 = GenRangeIterator::new(3, 13, 3).filter(|x| x % 2 == 0).sum();
+        assert_eq!(v, 6 + 12);
+    }
 }
