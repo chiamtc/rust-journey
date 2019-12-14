@@ -12,6 +12,7 @@ pub enum TransactionError {
     Mess(&'static str),
 }
 
+//implementing From trait for enum TransactionError so that in match case, we can use e.into() to get the string of our specific errors
 impl From<std::io::Error> for TransactionError {
     //from() is a requried function to implement from From trait
     // signature -> from(T) -> Self

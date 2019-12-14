@@ -48,6 +48,7 @@ pub fn get_transaction(fname: &str) -> Result<Vec<Transaction>, String> {
 }
 
 //this func is using custom build transaction error instead of string
+//e.into() is to get the specific type of error we implemented in enum TransactionError instead of e.to_string()
 pub fn get_transaction_type_error(fname: &str) -> Result<Vec<Transaction>, TransactionError> {
     let s = match std::fs::read_to_string(fname) {
         Ok(v) => v,
