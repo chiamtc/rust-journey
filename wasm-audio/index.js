@@ -117,6 +117,7 @@ import ('./pkg/wasm_audio').then(async (m) => {
             offline_audio_ctx2.prep_buffer_and_rendering(audio_buffer).then(function (renderedBuffer) {
                 const filtered_buffer= fm.apply_m3d_filter(renderedBuffer);
                 const song = fm.prep_buffer_source(filtered_buffer);
+                fm.attempt_fft();
                 console.log(song.buffer.getChannelData(0));
                 if(song !== undefined) {
                     clearInterval(timer);

@@ -4,10 +4,30 @@ extern crate js_sys;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use wasm_bindgen_futures::{JsFuture};
+use wasm_bindgen_futures::JsFuture;
 use web_sys::{AudioBufferSourceNode, AudioBuffer, OfflineAudioContext, AudioContext, Request, RequestInit, RequestMode, Response, console};
 
+
 //rustfft https://docs.rs/rustfft/3.0.0/rustfft/
+use wasm_bindgen::convert::FromWasmAbi;
+use wasm_bindgen::convert::IntoWasmAbi;
+use wasm_bindgen::convert::WasmAbi;
+use wasm_bindgen::describe::WasmDescribe;
+
+use std::sync::Arc;
+use rustfft::{FFTplanner, FFT};
+use rustfft::algorithm::Radix4;
+use rustfft::num_complex::Complex;
+use rustfft::num_traits::Zero;
+
+
+/*
+#[wasm_bindgen]
+extern "C"{
+    #[wasm_bindgen(js_namespace = fft)]
+    fn get_fft(fft:Radix4<f32>) -> Radix4<f32>;
+}
+*/
 
 #[derive(Debug)]
 struct Coefs {
@@ -140,9 +160,20 @@ impl M3dAudio {
         filtered_buffer.copy_to_channel(&mut output, 0);
         filtered_buffer
     }
+
+    #[wasm_bindgen]
+    pub fn attempt_fft(&self){
+        let mut input: Vec<Complex<f32>> = vec![Complex::zero(); 4096];
+        let mut output: Vec<Complex<f32>> = vec![Complex::zero(); 4096];
+
+        let fft = Radix4::new(4096, false);
+        fft.process(&mut input, &mut output);
+        console::log_1(&fft.into());
+        console::log_1(&"test?".into())
+    }
 }
 
-# [wasm_bindgen(js_name = "runner")]
+#[wasm_bindgen(js_name = "runner")]
 pub async fn run() -> Result<JsValue, JsValue> {
     let mut opts = RequestInit::new();
     opts.method("GET");
