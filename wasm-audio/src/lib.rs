@@ -290,3 +290,13 @@ pub async fn run() -> Result<JsValue, JsValue> {
 //another one in js - https://joshondesign.com/p/books/canvasdeepdive/chapter12.html
 
 //window function research https://stackoverflow.com/questions/32637841/analysernode-windowing
+
+//https://gist.github.com/moust/95f5cd5daa095f1aad89 drawing spectro
+
+//spectrum https://github.com/mattdesl/spectrum
+
+//good spectrogram starts but es5 https://github.com/miguelmota/spectrogram/blob/master/spectrogram.js
+
+//good analyser https://github.com/audio-lab/analyser
+
+//good as well https://github.com/a-vis/audio-spectrum/blob/master/index.js
