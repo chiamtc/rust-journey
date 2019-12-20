@@ -288,3 +288,5 @@ pub async fn run() -> Result<JsValue, JsValue> {
 
 //another one in js - https://stackoverflow.com/questions/18718337/fft-with-offlineaudiocontext
 //another one in js - https://joshondesign.com/p/books/canvasdeepdive/chapter12.html
+
+//window function research https://stackoverflow.com/questions/32637841/analysernode-windowing
