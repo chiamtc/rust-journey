@@ -1,26 +1,34 @@
 extern crate wasm_bindgen;
 extern crate web_sys;
 extern crate js_sys;
+extern crate rustfft;
+extern crate sonogram;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
-use web_sys::{AudioBufferSourceNode, AudioBuffer, OfflineAudioContext, AudioContext, Request, RequestInit, RequestMode, Response, console};
+use web_sys::{AudioBufferSourceNode, AudioBuffer, OfflineAudioContext, AudioContext, Request, RequestInit, RequestMode, Response, console, window};
 
-
+//good book https://zsiciarz.github.io/24daysofrust/book/vol2/day2.html
 //rustfft https://docs.rs/rustfft/3.0.0/rustfft/
 use wasm_bindgen::convert::FromWasmAbi;
 use wasm_bindgen::convert::IntoWasmAbi;
 use wasm_bindgen::convert::WasmAbi;
 use wasm_bindgen::describe::WasmDescribe;
 
+mod frequency;
+
+use frequency::Frequency;
+
 use std::sync::Arc;
-use rustfft::{FFTplanner, FFT};
+
+use rustfft::FFTplanner;
+use rustfft::FFT;
 use rustfft::algorithm::Radix4;
-use rustfft::num_complex::Complex;
+use rustfft::num_complex::{Complex, Complex64};
 use rustfft::num_traits::Zero;
 
-
+use sonogram::{Spectrograph, SpecOptionsBuilder};
 /*
 #[wasm_bindgen]
 extern "C"{
@@ -158,19 +166,93 @@ impl M3dAudio {
 
         let filtered_buffer = self.ctx.create_buffer(audio_buffer.number_of_channels(), audio_buffer.length(), audio_buffer.sample_rate()).unwrap();
         filtered_buffer.copy_to_channel(&mut output, 0);
+        let c1_data = filtered_buffer.get_channel_data(0).unwrap();
+
+        /*
+         let mut input: Vec<Complex<f32>> = vec![Complex::zero(); 4096];
+         let mut output: Vec<Complex<f32>> = vec![Complex::zero(); 4096];
+
+         let fft = Radix4::new(4096, false);
+         fft.process(&mut input, &mut output);*/
+
+        /*  let vert_array = js_sys::Float32Array::new(&JsValue::from(2));
+            let out:Vec<f32> = output.iter().map(|c|  {
+                c.norm();
+            }).collect();
+    //        let memory_buffer = wasm_bindgen::memory().dyn_into::<WebAssembly::Memory>().unwrap();
+            JsValue::from(vert_array);*/
+//        console::log_1(&c1_data[0].into());
         filtered_buffer
     }
 
+    //0.10394616425037384  = spectrumArray[0][0]
     #[wasm_bindgen]
-    pub fn attempt_fft(&self){
-        let mut input: Vec<Complex<f32>> = vec![Complex::zero(); 4096];
-        let mut output: Vec<Complex<f32>> = vec![Complex::zero(); 4096];
+    pub fn attempt_fft(&self, samples: &[f32]) -> JsValue {
+        //        let mut input: Vec<Complex<f32>> = vec![Complex::zero(); 4096];
+        //        let mut output: Vec<Complex<f32>> = vec![Complex::zero(); 4096];
+        //        let s = samples.to_vec().iter().take(2048).map(|d| Complex::new(f32::from(*d), 0.0)).collect();
 
-        let fft = Radix4::new(4096, false);
-        fft.process(&mut input, &mut output);
-        console::log_1(&fft.into());
-        console::log_1(&"test?".into())
+
+
+        let signal_len = samples.len();
+        let mut planner = FFTplanner::new(false);
+        let fft = planner.plan_fft(signal_len);
+
+        let width = 600;
+        let height = 200;
+        let window_size = signal_len as f32 / width as f32;
+        let pixel_size = window_size as f32 / (4. * height as f32);
+
+        let mut signal: Vec<Complex<f32>> = samples
+            .iter()
+            .map(|x| Complex::new(*x, 0f32))
+//             .frequency(pixel_size)
+            .collect::<Vec<_>>();
+
+        let mut spectrum: Vec<Complex<f32>> = signal.clone();
+
+        //let bin = 44100f32 / num_samples as f32;
+
+        fft.process(&mut signal, &mut spectrum);
+
+        let a: Vec<f32> = spectrum
+            .iter()
+            .map(|x: &Complex<f32>| x.norm() / (signal_len) as f32)// * bin as f32)
+            //.take(num_samples / 2)
+            .collect();
+        let num_chunks = get_number_of_chunks(2048, 2048) as f32;
+
+        JsValue::from_serde(&a).unwrap()
+        //        JsValue::from("some value")
     }
+
+    fn get_number_of_chunks(&mut self, chunk_len: usize, step: usize) -> usize {
+        let mut i = 0;
+        let mut chunks = 0;
+        while i + chunk_len <= self.data.len() {
+            i += step;
+            chunks += 1;
+        }
+        if i == self.data.len() {
+            chunks -= 1;
+        }
+        chunks
+    }
+
+
+    /*  #[wasm_bindgen]
+      pub fn attempt_fft(&self, samples: Vec<i16>) -> JsValue {
+          // Build the model
+          let mut spectrograph = SpecOptionsBuilder::new(600, 200)
+  //            .set_window_fn(sonogram::hann_function)
+              .load_data_from_memory(samples, 48000)
+              .build();
+          // Compute the spectrogram giving the number of bins and the window overlap.
+          spectrograph.compute(2048, 0.5);
+          let a:Vec<f32> = spectrograph.create_in_memory(false);
+  //        JsValue::from("test")
+          JsValue::from_serde(&a).unwrap()
+      }*/
 }
 
 #[wasm_bindgen(js_name = "runner")]
@@ -180,7 +262,7 @@ pub async fn run() -> Result<JsValue, JsValue> {
     opts.mode(RequestMode::Cors);
 
     let request = Request::new_with_str_and_init(
-        "https://firebasestorage.googleapis.com/v0/b/podstetheedata.appspot.com/o/human_samples%2F-Lsxlh74yy4ASUohCFEA.wav?alt=media&token=6088e994-73b6-47a4-bc0d-a1090cb3b288",
+        "https://firebasestorage.googleapis.com/v0/b/podstetheedata.appspot.com/o/human_samples%2F-LvrfS3FUwxCIH8_3uT3.wav?alt=media&token=24d4a22a-793f-4d10-b2cb-3345e188fb6b",
         &opts,
     )?;
 
@@ -195,3 +277,14 @@ pub async fn run() -> Result<JsValue, JsValue> {
 
     Ok(JsValue::from(json))
 }
+
+
+//good source : https://github.com/yurydelendik/thunderplains-2018-demos/tree/master/spectrum-final
+//spectrum : https://github.com/klangner/dsp/blob/master/examples/spectrum.rs
+
+//https://stackoverflow.com/questions/54726349/how-can-i-do-fft-analysis-of-audio-file-in-chrome-without-need-for-playback
+
+//dsp in rust https://github.com/klangner/dsp/blob/master/examples/spectrum.rs
+
+//another one in js - https://stackoverflow.com/questions/18718337/fft-with-offlineaudiocontext
+//another one in js - https://joshondesign.com/p/books/canvasdeepdive/chapter12.html
