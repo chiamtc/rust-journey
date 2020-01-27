@@ -29,13 +29,7 @@ use rustfft::num_complex::{Complex, Complex64};
 use rustfft::num_traits::Zero;
 
 use sonogram::{Spectrograph, SpecOptionsBuilder};
-/*
-#[wasm_bindgen]
-extern "C"{
-    #[wasm_bindgen(js_namespace = fft)]
-    fn get_fft(fft:Radix4<f32>) -> Radix4<f32>;
-}
-*/
+
 
 #[derive(Debug)]
 struct Coefs {
@@ -186,7 +180,7 @@ impl M3dAudio {
     }
 
     //0.10394616425037384  = spectrumArray[0][0]
-    #[wasm_bindgen]
+  /*  #[wasm_bindgen]
     pub fn attempt_fft(&self, samples: &[f32]) -> JsValue {
         //        let mut input: Vec<Complex<f32>> = vec![Complex::zero(); 4096];
         //        let mut output: Vec<Complex<f32>> = vec![Complex::zero(); 4096];
@@ -237,7 +231,7 @@ impl M3dAudio {
             chunks -= 1;
         }
         chunks
-    }
+    }*/
 
 
     /*  #[wasm_bindgen]

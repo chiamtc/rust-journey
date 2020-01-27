@@ -119,7 +119,7 @@ import ('./pkg/wasm_audio').then(async (m) => {
                 const filtered_buffer= fm.apply_m3d_filter(renderedBuffer);
                 const song = fm.prep_buffer_source(filtered_buffer);
                 console.log(filtered_buffer.getChannelData(0));
-                console.log(fm.attempt_fft(filtered_buffer.getChannelData(0)));
+                // console.log(fm.attempt_fft(filtered_buffer.getChannelData(0)));
                 if(song !== undefined) {
                     clearInterval(timer);
                 }
